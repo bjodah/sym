@@ -3,8 +3,7 @@ build:
   commands:
     - conda config --add channels bjodah
     - ./scripts/ci.sh sym
-    - (cd examples/; ipython2 nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=300 *.ipynb)
-    - (cd examples/; ../scripts/render_index.sh *.html)
+    - ./scripts/render_examples.sh
     - ./scripts/generate_docs.sh
     - ./scripts/prepare_deploy.sh
 
