@@ -13,8 +13,8 @@ _ref = np.array([37.252574322668998, 22.321937961124899, 10.9011158998744,
 
 
 def get_syms_exprs(backend):
-    x = backend.symarray(, 'x', 14)
-    p = backend.symarray(module, 'p', 14)
+    x = backend.symarray('x', 14)
+    p = backend.symarray('p', 14)
     syms = np.concatenate((x, p))
     exp = backend.exp
     exprs = [
@@ -62,9 +62,8 @@ class TimeLambdifyInit:
 
     params = ['sympy', 'symengine', 'pysym']
 
-    def time_init(self, module):
-        # __import__ to enable use of strings (pretty printing)
-        self.syms, self.exprs = get_syms_exprs(__import__(module))
+    def time_init(self, name):
+        self.syms, self.exprs = get_syms_exprs(sym.Backend(name))
 
 
 backend_names = list(sym.Backend.backends.keys())
