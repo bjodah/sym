@@ -8,17 +8,7 @@ import numpy as np
 class _Base(object):
 
     def __getattr__(self, key):
-        if key == '__sym_backend__':
-            return self.__dict__[key]
-        return self.__dict__.get(key, getattr(self.__sym_backend__, key))
-
-    def __setattr__(self, key, value):
-        if key == '__sym_backend__':
-            self.__dict__[key] = value
-        # elif key in self.__dict__:
-        #     self.__dict__[key] = value
-        else:
-            setattr(self.__sym_backend__, key, value)
+        return getattr(self.__sym_backend__, key)
 
 
 class _SymPy(_Base):
