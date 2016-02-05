@@ -11,9 +11,10 @@ build:
 requirements:
     build:
         - python
-        - cython
+        - numpy
     run:
         - python
+        - numpy
 
 test:
     imports:
@@ -21,6 +22,7 @@ test:
 
     requires:
         - pytest
+        - numpy
 
     commands:
         - py.test --pyargs sym
