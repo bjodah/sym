@@ -30,7 +30,7 @@ def test_Lambdify_matrix(key):
 
 
 @pytest.mark.parametrize('key', Backend.backends.keys())
-def test_Lambdify_matrix(key):
+def test_Lambdify_jacobian(key):
     be = Backend(key)
     x = be.Symbol('x')
     y = be.Symbol('y')

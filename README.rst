@@ -7,6 +7,9 @@ sym
 .. image:: https://img.shields.io/pypi/v/sym.svg
    :target: https://pypi.python.org/pypi/sym
    :alt: PyPI version
+.. image:: https://img.shields.io/badge/python-2.7,3.4-blue.svg
+   :target: https://www.python.org/
+   :alt: Python version
 .. image:: https://img.shields.io/pypi/l/sym.svg
    :target: https://github.com/bjodah/sym/blob/master/LICENSE
    :alt: License
@@ -27,11 +30,14 @@ Currently the following Python pacakges are available as "backends":
 - SymEngine
 - PySym
 
-The capabilities exposed are those needed by `pyodesys <https://pypi.python.org/pypi/pyodesys>`_
-and `pyneqsys <https://pypi.python.org/pypi/pyneqsys>`_ and include:
+The capabilities exposed here are those needed by 
+`pyodesys <https://pypi.python.org/pypi/pyodesys>`_ and
+`pyneqsys <https://pypi.python.org/pypi/pyneqsys>`_ and include:
 
 - Differentiation
 - Numerical evaluation (including "lambdify" support)
+
+see `tests <https://github.com/bjodah/sym/tree/master/sym/tests/>`_ for examples.
 
 
 Documentation
