@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from .. import Backend
 
+
 @pytest.mark.parametrize('key', Backend.backends.keys())
 def test_Matrix(key):
     be = Backend(key)

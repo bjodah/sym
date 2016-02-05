@@ -5,18 +5,11 @@ import os
 import numpy as np
 
 
-# ONLY_WHITELIST_ATTRS = os.environ.get('SYM_ONLY_WHITELIST_ATTRS', '0') == '1'
-# WHITE_LIST = 'Symbol Matrix symarray Dummy Lambdify '
-
 class _Base(object):
 
     def __getattr__(self, key):
         if key == '__sym_backend__':
             return self.__dict__[key]
-        # if ONLY_WHITELIST_ATTRS and (
-        #         key not in self.__dict__ and
-        #         key not in WHITE_LIST):
-        #     raise AttributeError
         return self.__dict__.get(key, getattr(self.__sym_backend__, key))
 
     def __setattr__(self, key, value):
@@ -37,6 +30,7 @@ class _SymPy(_Base):
         # Lambdify not in SymPy
         _lmb = self.lambdify(args, exprs, modules=[
             {'ImmutableMatrix': np.array}, 'numpy'])
+
         def cb(args, out=None):
             result = _lmb(*args)
             if out is not None:
@@ -60,7 +54,8 @@ class _SymPy(_Base):
         # will be in SymPy > 0.7.6.1
         arr = np.empty(shape, dtype=object)
         for index in np.ndindex(shape):
-            arr[index] = self.Symbol('%s_%s' % (prefix, '_'.join(map(str, index))))
+            arr[index] = self.Symbol('%s_%s' % (prefix,
+                                                '_'.join(map(str, index))))
         return arr
 
 
@@ -70,7 +65,6 @@ class _SymEngine(_Base):
 
     def __init__(self):
         self.__sym_backend__ = __import__('symengine')
-
 
     def Matrix(self, *args, **kwargs):
         return self.DenseMatrix(*args, **kwargs)  # MutableDenseMatrix in SymPy
@@ -105,6 +99,7 @@ def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
     if name is None:
         name = os.environ.get(envvar, '') or default
     return Backend.backends[name]()
+
 
 Backend.backends = {
     'sympy': _SymPy,
