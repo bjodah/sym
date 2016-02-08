@@ -1,7 +1,5 @@
 import numpy as np
-import sympy
-import pysym
-import symengine
+import sym
 
 # Real-life example (ion speciation problem in water chemistry)
 
