@@ -1,5 +1,5 @@
 sym
-=====
+===
 
 .. image:: http://hera.physchem.kth.se:9090/api/badges/bjodah/sym/status.svg
    :target: http://hera.physchem.kth.se:9090/bjodah/sym
@@ -26,13 +26,15 @@ test their packages against several symbolic manipulation libraries.
 
 Currently the following Python pacakges are available as "backends":
 
-- SymPy
-- SymEngine
-- PySym
+- `SymPy <https://github.com/sympy/sympy>`_
+- `SymEngine <https://github.com/symengine/symengine.py>`_
+- `PySym <https://github.com/bjodah/pysym>`_
+- `SymCXX <https://github.com/bjodah/symcxx>`_
 
 The capabilities exposed here are those needed by 
-`pyodesys <https://pypi.python.org/pypi/pyodesys>`_ and
-`pyneqsys <https://pypi.python.org/pypi/pyneqsys>`_ and include:
+- `pyodesys <https://pypi.python.org/pypi/pyodesys>`_2
+- `pyneqsys <https://pypi.python.org/pypi/pyneqsys>`_
+and include:
 
 - Differentiation
 - Numerical evaluation (including "lambdify" support)
