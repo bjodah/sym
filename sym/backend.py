@@ -72,6 +72,12 @@ class _PySym(_Base):
         self.__sym_backend__ = __import__('pysym')
 
 
+class _SymCXX(_Base):
+
+    def __init__(self):
+        self.__sym_backend__ = __import__('symcxx').NameSpace()
+
+
 def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
     """ Backend for the underlying symbolic manipulation pacages
 
@@ -95,4 +101,5 @@ Backend.backends = {
     'sympy': _SymPy,
     'symengine': _SymEngine,
     'pysym': _PySym,
+    'symcxx': _SymCXX,
 }
