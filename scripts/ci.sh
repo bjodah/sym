@@ -5,7 +5,7 @@ if [[ "$CI_BRANCH" =~ ^v[0-9]+.[0-9]?* ]]; then
 fi
 
 # Py3
-conda create -q -n test3 python=3.4 symengine-python sympy pysym symcxx pip pytest pytest-cov pytest-flakes pytest-pep8
+conda create -q -n test3 python=3.5 symengine-python sympy pysym symcxx pip pytest pytest-cov pytest-flakes pytest-pep8
 source activate test3
 python setup.py install
 # (cd /; python -m pytest --pyargs $1)

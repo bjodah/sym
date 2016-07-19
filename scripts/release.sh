@@ -19,7 +19,7 @@ PKG_UPPER=$(echo $PKG | tr '[:lower:]' '[:upper:]')
 ./scripts/run_tests.sh
 env ${PKG_UPPER}_RELEASE_VERSION=v$VERSION python setup.py sdist
 env ${PKG_UPPER}_RELEASE_VERSION=v$VERSION ./scripts/generate_docs.sh
-for CONDA_PY in 2.7 3.4 3.5; do
+for CONDA_PY in 2.7 3.5; do
     PATH=$ANACONDA_BIN_PATH:$PATH ./scripts/build_conda_recipe.sh v$VERSION --python $CONDA_PY
 done
 
