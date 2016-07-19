@@ -1,33 +1,33 @@
 package:
-    name: sym
-    version: 0.1.0.dev0
+  name: sym
+  version: 0.1.0.dev0
 
 source:
-    path: ../
+  path: ../
 
 build:
-    number: 0
+  number: 0
 
 requirements:
-    build:
-        - python
-        - numpy
-    run:
-        - python
-        - numpy
+  build:
+    - python
+    - numpy
+  run:
+    - python
+    - numpy
 
 test:
-    imports:
-        - sym
+  imports:
+    - sym
 
-    requires:
-        - pytest
-        - numpy
+  requires:
+    - pytest
+    - numpy
 
-    commands:
-        - py.test --pyargs sym
+  commands:
+    - py.test --pyargs sym
 
 about:
-    home: https://github.com/bjodah/sym
-    license: BSD
-    summary: unified wrapper to symbolic manipulation libraries in Python
+  home: https://github.com/bjodah/sym
+  license: BSD
+  summary: unified wrapper to symbolic manipulation libraries in Python

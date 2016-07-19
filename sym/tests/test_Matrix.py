@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function)
 
+import numpy as np
 import pytest
 from .. import Backend
 
@@ -26,5 +27,5 @@ def test_Matrix_jacobian(key):
     J = a.jacobian(b)
     assert J[0, 0] == 1
     assert J[0, 1] == 1
-    assert J[1, 0] == 2*x*y
-    assert J[1, 1] == x**2
+    lmb = be.Lambdify([x, y], [J[1, 0], J[1, 1]])
+    assert np.allclose(lmb(np.array([3, 5])), [2*3*5, 9])
