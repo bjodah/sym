@@ -27,7 +27,7 @@ class _SymPy(_Base):
                 out[...] = result[...]
                 return out
             else:
-                return result
+                return np.asarray(result, dtype=np.float64)
         return cb
 
     def symarray(self, prefix, shape, Symbol=None, real=True):
@@ -90,6 +90,16 @@ def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
     default: str
         name to use when the environment variable described by ``envvar`` is
         unset or empty (default: 'sympy')
+
+    Examples
+    --------
+    >>> be = Backend('sympy')
+    >>> x, y = map(be.Symbol, 'xy')
+    >>> exprs = [x + y + 1, x*y**2]
+    >>> lmb = be.Lambdify([x, y], exprs)
+    >>> import numpy as np
+    >>> lmb(np.array([2.0, 3.0]))
+    array([  6.,  18.])
 
     """
     if name is None:
