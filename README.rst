@@ -32,7 +32,7 @@ Currently the following Python pacakges are available as "backends":
 - `SymCXX <https://github.com/bjodah/symcxx>`_
 
 The capabilities exposed here are those needed by 
-- `pyodesys <https://pypi.python.org/pypi/pyodesys>`_2
+- `pyodesys <https://pypi.python.org/pypi/pyodesys>`_
 - `pyneqsys <https://pypi.python.org/pypi/pyneqsys>`_
 and include:
 
