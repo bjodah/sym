@@ -18,11 +18,13 @@ class _SymPy(_Base):
 
     def Lambdify(self, args, exprs):
         # Lambdify not in SymPy
+        # (SymEngine's lambdify supports arbitrarily number of arguments)
+
         _lmb = self.lambdify(args, exprs, modules=[
             {'ImmutableMatrix': np.array}, 'numpy'])
 
         def cb(args, out=None):
-            result = _lmb(*args)
+            result = _lmb(*np.asarray(args).T)
             if out is not None:
                 out[...] = result[...]
                 return out
