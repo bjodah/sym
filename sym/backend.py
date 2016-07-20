@@ -30,23 +30,8 @@ class _SymPy(_Base):
                 return np.asarray(result, dtype=np.float64)
         return cb
 
-    def symarray(self, prefix, shape, Symbol=None, real=True):
-        """ Creates an nd-array of symbols
-
-        Parameters
-        ----------
-        prefix: str
-        shape: tuple
-        Symbol: callable
-            (defualt :func:`Symbol`)
-        """
-        # see https://github.com/sympy/sympy/pull/9939
-        # will be in SymPy > 0.7.6.1
-        arr = np.empty(shape, dtype=object)
-        for index in np.ndindex(shape):
-            arr[index] = self.Symbol('%s_%s' % (prefix,
-                                                '_'.join(map(str, index))))
-        return arr
+    def real_symarray(self, prefix, shape):
+        return self.symarray(prefix, shape, real=True)
 
 
 class _SymEngine(_Base):
@@ -59,7 +44,8 @@ class _SymEngine(_Base):
     def Matrix(self, *args, **kwargs):
         return self.DenseMatrix(*args, **kwargs)  # MutableDenseMatrix in SymPy
 
-    symarray = _SymPy.__dict__['symarray']
+    def real_symarray(self, prefix, shape):
+        return self.symarray(prefix, shape)
 
     def Dummy(self):
         self._dummy_counter[0] += 1
@@ -71,11 +57,17 @@ class _PySym(_Base):
     def __init__(self):
         self.__sym_backend__ = __import__('pysym')
 
+    def real_symarray(self, prefix, shape):
+        return self.symarray(prefix, shape)
+
 
 class _SymCXX(_Base):
 
     def __init__(self):
         self.__sym_backend__ = __import__('symcxx').NameSpace()
+
+    def real_symarray(self, prefix, shape):
+        return self.symarray(prefix, shape)
 
 
 def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
@@ -104,7 +96,10 @@ def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
     """
     if name is None:
         name = os.environ.get(envvar, '') or default
-    return Backend.backends[name]()
+    if isinstance(name, _Base):
+        return name
+    else:
+        return Backend.backends[name]()
 
 
 Backend.backends = {
