@@ -58,7 +58,7 @@ def get_syms_exprs(backend):
 
 class TimeLambdifyInit:
 
-    params = ['sympy', 'symengine', 'pysym']
+    params = ['sympy', 'symengine', 'pysym', 'symcxx']
 
     def time_init(self, name):
         self.syms, self.exprs = get_syms_exprs(sym.Backend(name))
@@ -72,7 +72,7 @@ def _lzip(n):
     return list(zip([n]*n_backends, backend_names))
 
 
-class _TimeLambdifyEval:
+class TimeLambdifyEval:
 
     params = (_lzip(1), _lzip(100))
     param_names = ('n', 'backend')
@@ -88,4 +88,35 @@ class _TimeLambdifyEval:
         for i in range(n):
             res = self.lmb(self.inp)
         if not np.allclose(res, _ref):
+            raise ValueError('Incorrect result')
+
+
+def _mk_long_evaluator(backend, n):
+    x = backend.symarray('x', n)
+    p, q, r = 17, 42, 13
+    terms = [i*s for i, s in enumerate(x, p)]
+    exprs = [reduce(add, terms), r + x[0], -99]
+    callback = backend.Lambdify(x, exprs)
+    input_arr = np.arange(q, q + n*n).reshape((n, n))
+    ref = np.empty((n, 3))
+    coeffs = np.arange(p, p + n)
+    for i in range(n):
+        ref[i, 0] = coeffs.dot(np.arange(q + n*i, q + n*(i+1)))
+        ref[i, 1] = q + n*i + r
+    ref[:, 2] = -99
+    return callback, input_arr, ref
+
+
+class TimeLambdifyManyArgs:
+
+    params = (_lzip(254), _lzip(257))
+    param_names = ('n', 'backend')
+
+    def setup(self, n, name):
+        self.backend = sym.Backend(name)
+        self.callback, self.input_arr, self.ref = _mk_long_evaluator(self.backend, n)
+
+    def time_evaluate(self, n, name):
+        out = self.callback(self.input_arr)
+        if not np.allclose(out, self.ref):
             raise ValueError('Incorrect result')

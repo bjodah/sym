@@ -2,7 +2,6 @@
 from __future__ import (absolute_import, division, print_function)
 
 import os
-import numpy as np
 
 
 class _Base(object):
@@ -15,20 +14,8 @@ class _SymPy(_Base):
 
     def __init__(self):
         self.__sym_backend__ = __import__('sympy')
-
-    def Lambdify(self, args, exprs):
-        # Lambdify not in SymPy
-        _lmb = self.lambdify(args, exprs, modules=[
-            {'ImmutableMatrix': np.array}, 'numpy'])
-
-        def cb(args, out=None):
-            result = _lmb(*args)
-            if out is not None:
-                out[...] = result[...]
-                return out
-            else:
-                return np.asarray(result, dtype=np.float64)
-        return cb
+        from ._sympy_Lambdify import _Lambdify
+        self.Lambdify = _Lambdify
 
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape, real=True)
