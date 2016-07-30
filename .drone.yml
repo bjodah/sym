@@ -2,7 +2,6 @@ build:
   image: bjodah/bjodahimgdev:latest
   commands:
     - conda config --add channels bjodah
-    - conda config --add channels conda-forge
     - ./scripts/ci.sh sym
     - ./scripts/render_examples.sh
     - ./scripts/generate_docs.sh

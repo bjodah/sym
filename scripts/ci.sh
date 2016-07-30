@@ -7,6 +7,7 @@ fi
 # Py3
 conda create -q -n test3 python=3.5 python-symengine sympy pysym symcxx pip pytest pytest-cov pytest-flakes pytest-pep8
 source activate test3
+./build_and_install_python-symengine.sh 97c5a21d0b5acf743c59ebce5d925d658698b322
 python setup.py install
 # (cd /; python -m pytest --pyargs $1)
 PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html

@@ -23,7 +23,7 @@ def _get_shape_nested(ndarr):
     if isinstance(ndarr, (list, tuple)):
         return (len(ndarr),) + _get_shape_nested(ndarr[0])
     else:
-        return ()
+        return (len(ndarr),)
 
 
 def _get_shape(ndarr):
@@ -87,6 +87,7 @@ class _Lambdify(object):
             out[out_offset + idx] = self.exprs[idx].xreplace(subsd)
 
     def __call__(self, inp, out=None, use_numpy=None):
+        inp = list(inp)
         inp_shape = _get_shape(inp)
         inp_size = reduce(mul, inp_shape)
         if inp_size % self.args_size != 0:
