@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function)
 from functools import reduce
 from operator import add
 
+import math
 import numpy as np
 
 import pytest
@@ -133,3 +134,15 @@ def test_Lambdify_2dim_numpy(key):
         A = lmb(inp)
         assert A.shape == (2, 2)
         check(A, inp)
+
+
+@pytest.mark.parametrize('key', Backend.backends.keys())
+def test_Lambdify_invalid_args(key):
+    se = Backend(key)
+    x = se.Symbol('x')
+    log = se.Lambdify([x], [se.log(x)])
+    div = se.Lambdify([x], [1/x])
+    assert math.isnan(log([-1])[0])
+    assert math.isinf(-log([0])[0])
+    assert math.isinf(div([0])[0])
+    assert math.isinf(-div([-0])[0])
