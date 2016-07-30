@@ -23,7 +23,10 @@ def _get_shape_nested(ndarr):
     if isinstance(ndarr, (list, tuple)):
         return (len(ndarr),) + _get_shape_nested(ndarr[0])
     else:
-        return (len(ndarr),)
+        try:
+            return (len(ndarr),)
+        except TypeError:
+            return ()
 
 
 def _get_shape(ndarr):
