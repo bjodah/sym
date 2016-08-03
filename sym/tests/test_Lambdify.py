@@ -55,8 +55,8 @@ def test_broadcast(key):  # test is from symengine test suite
     inp = np.vstack((np.cos(a), np.sin(a))).T  # 50 rows 2 cols
     x, y = be.symbols('x y')
     distance = be.Lambdify([x, y], [be.sqrt(x**2 + y**2)])
-    assert np.allclose(distance([inp[0, 0], inp[0, 1]]), [1])
     dists = distance(inp)
+    assert np.allclose(distance([inp[0, 0], inp[0, 1]]), [1])
     assert dists.shape == (50, 1)
     assert np.allclose(dists, 1)
 

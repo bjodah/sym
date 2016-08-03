@@ -82,9 +82,12 @@ class _Lambdify(object):
         self.out_size = reduce(mul, self.out_shape)
         self.args = _flatten(args)
         self.exprs = [sympify(expr) for expr in _flatten(exprs)]
+        if self.out_size != len(self.exprs):
+            raise ValueError("Sanity-check failed: bug in %s" % self.__class__)
         self.real = real
+        self._numpy_callbacks = None
 
-    def _evaluate_numerically(self, inp, out, out_offset):
+    def _evaluate_xreplace(self, inp, out, out_offset):
         for idx in range(self.out_size):
             subsd = dict(zip(self.args, inp))
             out[out_offset + idx] = self.exprs[idx].xreplace(subsd)
@@ -147,13 +150,45 @@ class _Lambdify(object):
                 reshape_out = False
 
         flat_inp = _flatten(inp)
-        for idx in range(nbroadcast):
-            out_offset = idx*self.out_size
-            local_inp = flat_inp[idx*self.args_size:(idx+1)*self.args_size]
-            self._evaluate_numerically(local_inp, out, out_offset)
+        if use_numpy:
+            if self._numpy_callbacks is None:
+                self._numpy_callbacks = [lambdify_numpy_array(self.args, expr)
+                                         for expr in self.exprs]
+            for idx, callback in enumerate(self._numpy_callbacks):
+                out[..., idx] = callback(flat_inp)
+        else:
+            for idx in range(nbroadcast):
+                out_offset = idx*self.out_size
+                local_inp = flat_inp[idx*self.args_size:(idx+1)*self.args_size]
+                self._evaluate_xreplace(local_inp, out, out_offset)
 
         if use_numpy and reshape_out:
             out = out.reshape(new_out_shape)
         elif reshape_out:
             raise NotImplementedError("array.array lacks shape, use NumPy")
         return out
+
+
+def lambdify_numpy_array(args, expr):
+    import numpy as np
+    from sympy.printing.lambdarepr import NumPyPrinter
+    from sympy import IndexedBase, Symbol
+    x = IndexedBase('x')
+    indices = [Symbol('..., %d' % i) for i in range(len(args))]
+    dummy_subs = dict(zip(args, [x[i] for i in indices]))
+    dummified = expr.xreplace(dummy_subs)
+    estr = NumPyPrinter().doprint(dummified)
+
+    # NumPyPrinter incomplete: github.com/sympy/sympy/issues/11023
+    # we need to read translations from lambdify
+    from sympy.utilities.lambdify import NUMPY_TRANSLATIONS
+    namespace = np.__dict__.copy()
+    for k, v in NUMPY_TRANSLATIONS.items():
+        namespace[k] = namespace[v]
+    fun_def = "def _numpy_callback(x):\n    x = asarray(x); return %s" % estr
+    exec(fun_def, namespace)
+    print('')  # DO-NOT-MERGE!
+    print(fun_def)
+    print('')
+    namespace['_numpy_callback']._source = fun_def  # debugging
+    return namespace['_numpy_callback']
