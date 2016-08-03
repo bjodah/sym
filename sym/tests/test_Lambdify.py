@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function)
 from functools import reduce
 from operator import add
 
+import math
 import numpy as np
 
 import pytest
@@ -54,8 +55,8 @@ def test_broadcast(key):  # test is from symengine test suite
     inp = np.vstack((np.cos(a), np.sin(a))).T  # 50 rows 2 cols
     x, y = be.symbols('x y')
     distance = be.Lambdify([x, y], [be.sqrt(x**2 + y**2)])
-    assert np.allclose(distance([inp[0, 0], inp[0, 1]]), [1])
     dists = distance(inp)
+    assert np.allclose(distance([inp[0, 0], inp[0, 1]]), [1])
     assert dists.shape == (50, 1)
     assert np.allclose(dists, 1)
 
@@ -133,3 +134,16 @@ def test_Lambdify_2dim_numpy(key):
         A = lmb(inp)
         assert A.shape == (2, 2)
         check(A, inp)
+
+
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
+                                       Backend.backends.keys()))
+def test_Lambdify_invalid_args(key):
+    se = Backend(key)
+    x = se.Symbol('x')
+    log = se.Lambdify([x], [se.log(x)])
+    div = se.Lambdify([x], [1/x])
+    assert math.isnan(log([-1])[0])
+    assert math.isinf(-log([0])[0])
+    assert math.isinf(div([0])[0])
+    assert math.isinf(-div([-0])[0])

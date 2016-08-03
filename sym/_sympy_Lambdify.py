@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function)
 
+import os
 import array
 from functools import reduce
 from itertools import product
@@ -76,15 +77,22 @@ class _Lambdify(object):
     # If any modifications are to be made, they need to be implemented
     # in symengine.Lambdify *first*, and then reimplemented here.
 
-    def __init__(self, args, exprs, real=True):
+    def __init__(self, args, exprs, real=True, use_numba=None):
         self.out_shape = _get_shape(exprs)
         self.args_size = _size(args)
         self.out_size = reduce(mul, self.out_shape)
         self.args = _flatten(args)
         self.exprs = [sympify(expr) for expr in _flatten(exprs)]
+        if self.out_size != len(self.exprs):
+            raise ValueError("Sanity-check failed: bug in %s" % self.__class__)
         self.real = real
+        self._numpy_callbacks = None
+        if use_numba is None:
+            _true = ('1', 't', 'true')
+            use_numba = os.environ.get('SYM_USE_NUMBA', '0').lower() in _true
+        self.use_numba = use_numba
 
-    def _evaluate_numerically(self, inp, out, out_offset):
+    def _evaluate_xreplace(self, inp, out, out_offset):
         for idx in range(self.out_size):
             subsd = dict(zip(self.args, inp))
             out[out_offset + idx] = self.exprs[idx].xreplace(subsd)
@@ -121,7 +129,7 @@ class _Lambdify(object):
                 if self.real:
                     out = array.array('d', [0]*new_out_size)
                 else:
-                    out = array.array('Zd', [0j]*new_out_size)  # fails
+                    raise NotImplementedError("Zd unsupported in array.array")
                 reshape_out = False
         else:
             if use_numpy:
@@ -129,8 +137,6 @@ class _Lambdify(object):
                     raise TypeError("Output array is of incorrect type")
                 if out.size < new_out_size:
                     raise ValueError("Incompatible size of output argument")
-                if not out.flags['C_CONTIGUOUS']:
-                    raise ValueError("Output array needs to be C-contiguous")
                 for idx, ln in enumerate(out.shape[-len(self.out_shape)::-1]):
                     if ln < self.out_shape[-idx]:
                         raise ValueError("Incompatible shape of output array")
@@ -146,14 +152,51 @@ class _Lambdify(object):
             else:
                 reshape_out = False
 
-        flat_inp = _flatten(inp)
-        for idx in range(nbroadcast):
-            out_offset = idx*self.out_size
-            local_inp = flat_inp[idx*self.args_size:(idx+1)*self.args_size]
-            self._evaluate_numerically(local_inp, out, out_offset)
+        if use_numpy:
+            if self._numpy_callbacks is None:
+                self._numpy_callbacks = [lambdify_numpy_array(
+                    self.args, expr, self.use_numba) for expr in self.exprs]
+            if reshape_out:
+                out = out.reshape(new_out_shape)
+            for idx, callback in zip(_all_indices_from_shape(self.out_shape),
+                                     self._numpy_callbacks):
+                out[(Ellipsis,) + idx] = callback(inp)
+        else:
+            flat_inp = _flatten(inp)
+            for idx in range(nbroadcast):
+                out_offset = idx*self.out_size
+                local_inp = flat_inp[idx*self.args_size:(idx+1)*self.args_size]
+                self._evaluate_xreplace(local_inp, out, out_offset)
 
-        if use_numpy and reshape_out:
-            out = out.reshape(new_out_shape)
-        elif reshape_out:
+        if not use_numpy and reshape_out:
             raise NotImplementedError("array.array lacks shape, use NumPy")
         return out
+
+
+def lambdify_numpy_array(args, expr, use_numba=False):
+    import numpy as np
+    from sympy.printing.lambdarepr import NumPyPrinter
+    from sympy import IndexedBase, Symbol
+    x = IndexedBase('x')
+    indices = [Symbol('..., %d' % i) for i in range(len(args))]
+    dummy_subs = dict(zip(args, [x[i] for i in indices]))
+    dummified = expr.xreplace(dummy_subs)
+    estr = NumPyPrinter().doprint(dummified)
+
+    namespace = np.__dict__.copy()
+
+    # NumPyPrinter incomplete: github.com/sympy/sympy/issues/11023
+    # we need to read translations from lambdify
+    from sympy.utilities.lambdify import NUMPY_TRANSLATIONS
+    for k, v in NUMPY_TRANSLATIONS.items():
+        namespace[k] = namespace[v]
+
+    func = eval('lambda x: %s' % estr, namespace)
+    if use_numba:
+        from numba import njit
+        func = njit(func)
+
+    def wrapper(x):
+        return func(np.asarray(x))
+
+    return wrapper
