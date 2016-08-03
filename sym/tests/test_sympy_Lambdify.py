@@ -5,6 +5,12 @@ from .._sympy_Lambdify import lambdify_numpy_array
 
 from sympy import symbols, atan
 import numpy as np
+import pytest
+
+try:
+    import numba
+except ImportError:
+    numba = None
 
 
 def test_lambdify_numpy_array():
@@ -33,3 +39,15 @@ def test_lambdify_numpy_array__broadcast():
         [27 + np.arctan(21), 28 + np.arctan(22)]
     ]
     assert np.allclose(cb(inp2), ref2)
+
+
+@pytest.mark.skipif(numba is None, reason='numba not available')
+def test_lambdify_numpy_array__numba():
+    args = x, y = symbols('x y')
+    expr = x + atan(y)
+    cb = lambdify_numpy_array(args, expr, use_numba=True)
+    n = 500
+    inp = np.empty((n, 2))
+    inp[:, 0] = np.linspace(0, 1, n)
+    inp[:, 1] = np.linspace(-10, 10, n)
+    assert np.allclose(cb(inp), inp[:, 0] + np.arctan(inp[:, 1]))

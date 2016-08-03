@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function)
 
+import os
 import array
 from functools import reduce
 from itertools import product
@@ -76,7 +77,7 @@ class _Lambdify(object):
     # If any modifications are to be made, they need to be implemented
     # in symengine.Lambdify *first*, and then reimplemented here.
 
-    def __init__(self, args, exprs, real=True, use_numba=False):
+    def __init__(self, args, exprs, real=True, use_numba=None):
         self.out_shape = _get_shape(exprs)
         self.args_size = _size(args)
         self.out_size = reduce(mul, self.out_shape)
@@ -86,6 +87,10 @@ class _Lambdify(object):
             raise ValueError("Sanity-check failed: bug in %s" % self.__class__)
         self.real = real
         self._numpy_callbacks = None
+        if use_numba is None:
+            _true = ('1', 't', 'true')
+            use_numba = os.environ.get('SYM_USE_NUMBA', '0').lower() in _true
+        self.use_numba = use_numba
 
     def _evaluate_xreplace(self, inp, out, out_offset):
         for idx in range(self.out_size):
@@ -124,7 +129,7 @@ class _Lambdify(object):
                 if self.real:
                     out = array.array('d', [0]*new_out_size)
                 else:
-                    raise NotImplementedError("array.array does not support Zd")
+                    raise NotImplementedError("Zd unsupported in array.array")
                 reshape_out = False
         else:
             if use_numpy:
@@ -149,8 +154,8 @@ class _Lambdify(object):
 
         if use_numpy:
             if self._numpy_callbacks is None:
-                self._numpy_callbacks = [lambdify_numpy_array(self.args, expr, self.use_numba)
-                                         for expr in self.exprs]
+                self._numpy_callbacks = [lambdify_numpy_array(
+                    self.args, expr, self.use_numba) for expr in self.exprs]
             if reshape_out:
                 out = out.reshape(new_out_shape)
             for idx, callback in zip(_all_indices_from_shape(self.out_shape),
@@ -178,12 +183,14 @@ def lambdify_numpy_array(args, expr, use_numba=False):
     dummified = expr.xreplace(dummy_subs)
     estr = NumPyPrinter().doprint(dummified)
 
+    namespace = np.__dict__.copy()
+
     # NumPyPrinter incomplete: github.com/sympy/sympy/issues/11023
     # we need to read translations from lambdify
     from sympy.utilities.lambdify import NUMPY_TRANSLATIONS
-    namespace = np.__dict__.copy()
     for k, v in NUMPY_TRANSLATIONS.items():
         namespace[k] = namespace[v]
+
     func = eval('lambda x: %s' % estr, namespace)
     if use_numba:
         from numba import njit

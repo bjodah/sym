@@ -136,7 +136,8 @@ def test_Lambdify_2dim_numpy(key):
         check(A, inp)
 
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
+                                       Backend.backends.keys()))
 def test_Lambdify_invalid_args(key):
     se = Backend(key)
     x = se.Symbol('x')
