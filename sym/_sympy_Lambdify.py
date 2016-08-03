@@ -76,7 +76,7 @@ class _Lambdify(object):
     # If any modifications are to be made, they need to be implemented
     # in symengine.Lambdify *first*, and then reimplemented here.
 
-    def __init__(self, args, exprs, real=True):
+    def __init__(self, args, exprs, real=True, use_numba=False):
         self.out_shape = _get_shape(exprs)
         self.args_size = _size(args)
         self.out_size = reduce(mul, self.out_shape)
@@ -124,7 +124,7 @@ class _Lambdify(object):
                 if self.real:
                     out = array.array('d', [0]*new_out_size)
                 else:
-                    out = array.array('Zd', [0j]*new_out_size)  # fails
+                    raise NotImplementedError("array.array does not support Zd")
                 reshape_out = False
         else:
             if use_numpy:
@@ -132,8 +132,6 @@ class _Lambdify(object):
                     raise TypeError("Output array is of incorrect type")
                 if out.size < new_out_size:
                     raise ValueError("Incompatible size of output argument")
-                if not out.flags['C_CONTIGUOUS']:
-                    raise ValueError("Output array needs to be C-contiguous")
                 for idx, ln in enumerate(out.shape[-len(self.out_shape)::-1]):
                     if ln < self.out_shape[-idx]:
                         raise ValueError("Incompatible shape of output array")
@@ -149,27 +147,28 @@ class _Lambdify(object):
             else:
                 reshape_out = False
 
-        flat_inp = _flatten(inp)
         if use_numpy:
             if self._numpy_callbacks is None:
-                self._numpy_callbacks = [lambdify_numpy_array(self.args, expr)
+                self._numpy_callbacks = [lambdify_numpy_array(self.args, expr, self.use_numba)
                                          for expr in self.exprs]
-            for idx, callback in enumerate(self._numpy_callbacks):
-                out[..., idx] = callback(flat_inp)
+            if reshape_out:
+                out = out.reshape(new_out_shape)
+            for idx, callback in zip(_all_indices_from_shape(self.out_shape),
+                                     self._numpy_callbacks):
+                out[(Ellipsis,) + idx] = callback(inp)
         else:
+            flat_inp = _flatten(inp)
             for idx in range(nbroadcast):
                 out_offset = idx*self.out_size
                 local_inp = flat_inp[idx*self.args_size:(idx+1)*self.args_size]
                 self._evaluate_xreplace(local_inp, out, out_offset)
 
-        if use_numpy and reshape_out:
-            out = out.reshape(new_out_shape)
-        elif reshape_out:
+        if not use_numpy and reshape_out:
             raise NotImplementedError("array.array lacks shape, use NumPy")
         return out
 
 
-def lambdify_numpy_array(args, expr):
+def lambdify_numpy_array(args, expr, use_numba=False):
     import numpy as np
     from sympy.printing.lambdarepr import NumPyPrinter
     from sympy import IndexedBase, Symbol
@@ -185,10 +184,12 @@ def lambdify_numpy_array(args, expr):
     namespace = np.__dict__.copy()
     for k, v in NUMPY_TRANSLATIONS.items():
         namespace[k] = namespace[v]
-    fun_def = "def _numpy_callback(x):\n    x = asarray(x); return %s" % estr
-    exec(fun_def, namespace)
-    print('')  # DO-NOT-MERGE!
-    print(fun_def)
-    print('')
-    namespace['_numpy_callback']._source = fun_def  # debugging
-    return namespace['_numpy_callback']
+    func = eval('lambda x: %s' % estr, namespace)
+    if use_numba:
+        from numba import njit
+        func = njit(func)
+
+    def wrapper(x):
+        return func(np.asarray(x))
+
+    return wrapper
