@@ -63,6 +63,18 @@ def test_broadcast(key):  # test is from symengine test suite
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
                                        Backend.backends.keys()))
+def test_broadcast_shapes(key):  # test is from symengine test suite
+    be = Backend(key)
+    x, y = be.symbols('x y')
+    lmb = be.Lambdify([x, y], [x+y, x-y, x/y])
+    assert lmb(np.asarray([2, 3])).shape == (3,)
+    assert lmb(np.asarray([[2, 3]])).shape == (1, 3)
+    assert lmb(np.asarray([[[2, 3]]])).shape == (1, 1, 3)
+    assert lmb(np.arange(5*7*6*2).reshape((5, 7, 6, 2))).shape == (5, 7, 6, 3)
+
+
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
+                                       Backend.backends.keys()))
 def test_broadcast_multiple_extra_dimensions(key):
     se = Backend(key)
     inp = np.arange(12.).reshape((4, 3, 1))

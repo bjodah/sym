@@ -98,8 +98,11 @@ class _Lambdify(object):
             out[out_offset + idx] = self.exprs[idx].xreplace(subsd)
 
     def __call__(self, inp, out=None, use_numpy=None):
-        inp = list(inp)
-        inp_shape = _get_shape(inp)
+        if hasattr(inp, 'shape'):
+            inp_shape = inp.shape
+        else:
+            inp = list(inp)
+            inp_shape = _get_shape(inp)
         inp_size = reduce(mul, inp_shape)
         if inp_size % self.args_size != 0:
             raise ValueError("Broadcasting failed")
