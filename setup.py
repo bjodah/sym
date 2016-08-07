@@ -59,6 +59,9 @@ setup_kwargs = dict(
     license='BSD',
     packages=[pkg_name] + tests,
     install_requires=['numpy'],
+    extras_require={
+        'all': ['sympy>=1.0', 'pysym', 'symcxx']  # use conda for symengine
+    }
 )
 
 if __name__ == '__main__':

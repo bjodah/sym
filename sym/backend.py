@@ -72,13 +72,15 @@ def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
 
     Examples
     --------
-    >>> be = Backend('sympy')
+    >>> be = Backend('sympy')  # or e.g. 'symengine'
     >>> x, y = map(be.Symbol, 'xy')
     >>> exprs = [x + y + 1, x*y**2]
     >>> lmb = be.Lambdify([x, y], exprs)
     >>> import numpy as np
-    >>> lmb(np.array([2.0, 3.0]))
-    array([  6.,  18.])
+    >>> lmb(np.arange(6.0).reshape((3, 2)))
+    array([[   2.,    0.],
+           [   6.,   18.],
+           [  10.,  100.]])
 
     """
     if name is None:

@@ -21,8 +21,8 @@ sym
    :alt: coverage
 
 `sym <https://github.com/bjodah/sym>`_ provides a unified wrapper to some
-symbolic manipulation libraries in Python. It makes it easy for users to
-test their packages against several symbolic manipulation libraries.
+symbolic manipulation libraries in Python. It makes it easy for library authors
+to test their packages against several symbolic manipulation libraries.
 
 Currently the following Python pacakges are available as "backends":
 
@@ -32,8 +32,10 @@ Currently the following Python pacakges are available as "backends":
 - `SymCXX <https://github.com/bjodah/symcxx>`_
 
 The capabilities exposed here are those needed by 
+
 - `pyodesys <https://pypi.python.org/pypi/pyodesys>`_
 - `pyneqsys <https://pypi.python.org/pypi/pyneqsys>`_
+
 and include:
 
 - Differentiation
@@ -73,7 +75,7 @@ Differentiation
 .. code:: python
 
    >>> from sym import Backend
-   >>> be = Backend('pysym')
+   >>> be = Backend('pysym')  # just an example, use SymPy rather than pysym
    >>> x, y = map(be.Symbol, 'x y'.split())
    >>> expr = x*y**2 - be.tan(2*x)
    >>> print(expr.diff(x))
