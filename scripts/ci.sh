@@ -4,11 +4,9 @@ if [[ "$CI_BRANCH" =~ ^v[0-9]+.[0-9]?* ]]; then
     echo ${CI_BRANCH} | tail -c +2 > __conda_version__.txt
 fi
 
-./scripts/build_and_install_symengine.sh
 # Py3
-conda create -q -n test3 python=3.5 sympy pysym symcxx pip pytest pytest-cov pytest-flakes pytest-pep8 # python-symengine
+conda create -q -n test3 python=3.5 sympy pysym symcxx pip pytest pytest-cov pytest-flakes pytest-pep8 python-symengine
 source activate test3
-./scripts/build_and_install_python-symengine.sh
 python setup.py install
 # (cd /; python -m pytest --pyargs $1)
 PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html
@@ -16,9 +14,8 @@ PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html
 #source deactivate
 
 # Py2
-conda create -q -n test2 python=2.7 sympy pysym symcxx pip pytest # python-symengine
+conda create -q -n test2 python=2.7 sympy pysym symcxx pip pytest python-symengine
 source activate test2
-./scripts/build_and_install_python-symengine.sh
 python setup.py sdist
 pip install dist/*.tar.gz
 (cd /; python -m pytest --pyargs $1)

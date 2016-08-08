@@ -201,5 +201,6 @@ def lambdify_numpy_array(args, expr, use_numba=False):
 
     def wrapper(x):
         return func(np.asarray(x))
+    wrapper.__doc__ = estr
 
     return wrapper
