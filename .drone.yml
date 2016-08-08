@@ -2,6 +2,7 @@ build:
   image: bjodah/bjodahimgdev:latest
   commands:
     - conda config --add channels bjodah
+    - conda config --add channels symengine/label/dev
     - ./scripts/ci.sh sym
     - ./scripts/render_examples.sh
     - ./scripts/generate_docs.sh

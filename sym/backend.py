@@ -3,11 +3,18 @@ from __future__ import (absolute_import, division, print_function)
 
 import os
 
+from .util import banded_jacobian
+
 
 class _Base(object):
 
     def __getattr__(self, key):
         return getattr(self.__sym_backend__, key)
+
+    def banded_jacobian(self, exprs, dep, ml, mu):
+        """ Wraps Matrix around result of .util.banded_jacobian """
+        exprs = banded_jacobian(exprs, dep, ml, mu)
+        return self.Matrix(ml+mu+1, len(dep), list(exprs.flat))
 
 
 class _SymPy(_Base):
@@ -29,7 +36,7 @@ class _SymEngine(_Base):
         self.__sym_backend__ = __import__('symengine')
 
     def Matrix(self, *args, **kwargs):
-        return self.DenseMatrix(*args, **kwargs)  # MutableDenseMatrix in SymPy
+        return self.DenseMatrix(*args, **kwargs)
 
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape)
