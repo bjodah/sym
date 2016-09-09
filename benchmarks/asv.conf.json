@@ -43,11 +43,13 @@
     // list indicates to just test against the default (latest)
     // version.
     "matrix": {
-        "sympy": [],
-        "symengine-python": [],
         "numpy": [],
+        "numba": [],
+        "sympy": [],
         "fastcache": [],
+        "python-symengine": [],
         "pysym": [],
+        "symcxx": [],
     },
 
     // The directory (relative to the current directory) that benchmarks are

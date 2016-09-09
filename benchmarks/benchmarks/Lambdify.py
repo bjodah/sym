@@ -1,3 +1,5 @@
+from functools import reduce
+from operator import add
 import numpy as np
 import sym
 
@@ -61,42 +63,47 @@ class TimeLambdifyInit:
     params = ['sympy', 'symengine', 'pysym', 'symcxx']
 
     def time_init(self, name):
-        self.syms, self.exprs = get_syms_exprs(sym.Backend(name))
+        be = sym.Backend(name)
+        self.syms, self.exprs = get_syms_exprs(be)
+        cb = be.Lambdify(self.syms, self.exprs)
 
 
 backend_names = list(sym.Backend.backends.keys())
 n_backends = len(backend_names)
+_backend_numba = list(zip(backend_names, zip(*[[False]*n_backends]*2))) + [('sympy', (True, False)), ('sympy', (True, True))]
 
-
-def _lzip(n):
-    return list(zip([n]*n_backends, backend_names))
 
 
 class TimeLambdifyEval:
 
-    params = (_lzip(1), _lzip(100))
-    param_names = ('n', 'backend')
+    params = ([1, 100], _backend_numba)
+    param_names = ('n', 'backend_numba')
 
-    def setup(self, n, name):
+    def setup(self, n, backend_numba):
+        name, (use_numba, warm_up) = backend_numba
         self.inp = np.ones(28)
         self.backend = sym.Backend(name)
         self.syms, self.exprs = get_syms_exprs(self.backend)
-        self.lmb = self.backend(self.syms, self.exprs)
+        kwargs = {'use_numba': use_numba} if name == 'sympy' else {}
+        self.lmb = self.backend.Lambdify(self.syms, self.exprs, **kwargs)
         self.values = {}
+        if warm_up:
+            self.time_evaluate(n, backend_numba)
 
-    def time_evaluate(self, n, name):
+    def time_evaluate(self, n, backend_numba):
+        name, (use_numba, warm_up) = backend_numba
         for i in range(n):
             res = self.lmb(self.inp)
         if not np.allclose(res, _ref):
             raise ValueError('Incorrect result')
 
 
-def _mk_long_evaluator(backend, n):
+def _mk_long_evaluator(backend, n, **kwargs):
     x = backend.symarray('x', n)
     p, q, r = 17, 42, 13
     terms = [i*s for i, s in enumerate(x, p)]
     exprs = [reduce(add, terms), r + x[0], -99]
-    callback = backend.Lambdify(x, exprs)
+    callback = backend.Lambdify(x, exprs, **kwargs)
     input_arr = np.arange(q, q + n*n).reshape((n, n))
     ref = np.empty((n, 3))
     coeffs = np.arange(p, p + n)
@@ -109,14 +116,20 @@ def _mk_long_evaluator(backend, n):
 
 class TimeLambdifyManyArgs:
 
-    params = (_lzip(254), _lzip(257))
-    param_names = ('n', 'backend')
+    params = ([100, 200, 300], _backend_numba)
+    param_names = ('n', 'backend_numba')
 
-    def setup(self, n, name):
+    def setup(self, n, backend_numba):
+        name, (use_numba, warm_up) = backend_numba
         self.backend = sym.Backend(name)
-        self.callback, self.input_arr, self.ref = _mk_long_evaluator(self.backend, n)
+        kwargs = {'use_numba': use_numba} if name == 'sympy' else {}
+        self.callback, self.input_arr, self.ref = _mk_long_evaluator(self.backend, n, **kwargs)
+        if warm_up:
+            self.time_evaluate(n, backend_numba)
 
-    def time_evaluate(self, n, name):
+
+    def time_evaluate(self, n, backend_numba):
+        name, (use_numba, warm_up) = backend_numba
         out = self.callback(self.input_arr)
         if not np.allclose(out, self.ref):
             raise ValueError('Incorrect result')
