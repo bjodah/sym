@@ -60,7 +60,7 @@ setup_kwargs = dict(
     packages=[pkg_name] + tests,
     install_requires=['numpy'],
     extras_require={
-        'all': ['sympy>=1.0', 'pysym', 'symcxx']  # use conda for symengine
+        'all': ['sympy>=1.0', 'pysym', 'symcxx', 'diofant']  # use conda for symengine
     }
 )
 

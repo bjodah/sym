@@ -9,6 +9,7 @@ conda create -q -n test3 python=3.5 sympy pysym symcxx pip pytest pytest-cov pyt
 source activate test3
 python setup.py install
 # (cd /; python -m pytest --pyargs $1)
+python -m pip install diofant
 PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html
 ./scripts/coverage_badge.py htmlcov/ htmlcov/coverage.svg
 #source deactivate
@@ -18,6 +19,7 @@ conda create -q -n test2 python=2.7 sympy pysym symcxx pip pytest python-symengi
 source activate test2
 python setup.py sdist
 pip install dist/*.tar.gz
+python -m pip install diofant
 (cd /; python -m pytest --pyargs $1)
 
 ! grep "DO-NOT-MERGE!" -R . --exclude ci.sh
