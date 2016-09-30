@@ -14,7 +14,6 @@ from .. import Backend
 # functionality as SymPy's lambdify but works for arbitrarily long input
 
 _backend_keys = list(Backend.backends.keys())
-_backend_keys.pop('diofant')
 
 @pytest.mark.parametrize('key', _backend_keys)
 def test_Lambdify_single_arg(key):
