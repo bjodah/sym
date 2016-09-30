@@ -19,7 +19,6 @@ conda create -q -n test2 python=2.7 sympy pysym symcxx pip pytest python-symengi
 source activate test2
 python setup.py sdist
 pip install dist/*.tar.gz
-python -m pip install diofant
 (cd /; python -m pytest --pyargs $1)
 
 ! grep "DO-NOT-MERGE!" -R . --exclude ci.sh
