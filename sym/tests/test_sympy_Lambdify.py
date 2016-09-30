@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function)
 
-from .._sympy_Lambdify import lambdify_numpy_array
-
-from sympy import symbols, atan
 import numpy as np
 import pytest
+import sympy as sp
+from sympy.utilities.lambdify import NUMPY_TRANSLATIONS
+from .._sympy_Lambdify import create_Lambdify
+
+
+lambdify_numpy_array = create_Lambdify(
+    sp.MatrixBase, sp.sympify, sp.printing.lambdarepr.NumPyPrinter,
+    sp.IndexedBase, sp.Symbol, NUMPY_TRANSLATIONS)[1]
 
 try:
     import numba
@@ -14,8 +19,8 @@ except ImportError:
 
 
 def test_lambdify_numpy_array():
-    args = x, y = symbols('x y')
-    expr = x + atan(y)
+    args = x, y = sp.symbols('x y')
+    expr = x + sp.atan(y)
     cb = lambdify_numpy_array(args, expr)
     inp = np.array([17, 1])
     ref = 17 + np.arctan(1)
@@ -23,8 +28,8 @@ def test_lambdify_numpy_array():
 
 
 def test_lambdify_numpy_array__broadcast():
-    args = x, y = symbols('x y')
-    expr = x + atan(y)
+    args = x, y = sp.symbols('x y')
+    expr = x + sp.atan(y)
     cb = lambdify_numpy_array(args, expr)
     inp = np.array([[17, 1], [18, 2]])
     ref = [17 + np.arctan(1), 18 + np.arctan(2)]
@@ -43,8 +48,8 @@ def test_lambdify_numpy_array__broadcast():
 
 @pytest.mark.skipif(numba is None, reason='numba not available')
 def test_lambdify_numpy_array__numba():
-    args = x, y = symbols('x y')
-    expr = x + atan(y)
+    args = x, y = sp.symbols('x y')
+    expr = x + sp.atan(y)
     cb = lambdify_numpy_array(args, expr, use_numba=True)
     n = 500
     inp = np.empty((n, 2))

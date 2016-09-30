@@ -30,6 +30,7 @@ Currently the following Python pacakges are available as "backends":
 - `SymEngine <https://github.com/symengine/symengine.py>`_
 - `PySym <https://github.com/bjodah/pysym>`_
 - `SymCXX <https://github.com/bjodah/symcxx>`_
+- `Diofant <https://github.com/diofant/diofant>`_
 
 The capabilities exposed here are those needed by 
 

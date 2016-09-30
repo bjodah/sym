@@ -2,11 +2,22 @@
 from __future__ import (absolute_import, division, print_function)
 
 import os
+import sys
 
 from .util import banded_jacobian
+from ._sympy_Lambdify import create_Lambdify
 
 
 class _Base(object):
+
+    __sym_backend_name__ = None
+
+    def __init__(self):
+        self.__sym_backend__ = __import__(self.__sym_backend_name__)
+        self._post_init()
+
+    def _post_init(self):
+        pass
 
     def __getattr__(self, key):
         return getattr(self.__sym_backend__, key)
@@ -17,23 +28,37 @@ class _Base(object):
         return self.Matrix(ml+mu+1, len(dep), list(exprs.flat))
 
 
-class _SymPy(_Base):
+class _SymPyBase(_Base):
 
-    def __init__(self):
-        self.__sym_backend__ = __import__('sympy')
-        from ._sympy_Lambdify import _Lambdify
-        self.Lambdify = _Lambdify
+    def _post_init(self):
+        _trans = __import__(self.__sym_backend_name__ + '.utilities.lambdify',
+                            fromlist=['NUMPY_TRANSLATIONS'])
+        _print = __import__(self.__sym_backend_name__ + '.printing.lambdarepr',
+                            fromlist=['NumPyPrinter'])
+        self.Lambdify = create_Lambdify(self.MatrixBase, self.sympify,
+                                        _print.NumPyPrinter,
+                                        self.IndexedBase, self.Symbol,
+                                        _trans.NUMPY_TRANSLATIONS)[0]
 
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape, real=True)
 
 
+class _SymPy(_SymPyBase):
+
+    __sym_backend_name__ = 'sympy'
+
+
+class _Diofant(_SymPyBase):
+
+    __sym_backend_name__ = 'diofant'
+
+
 class _SymEngine(_Base):
 
-    _dummy_counter = [0]
+    __sym_backend_name__ = 'symengine'
 
-    def __init__(self):
-        self.__sym_backend__ = __import__('symengine')
+    _dummy_counter = [0]
 
     def Matrix(self, *args, **kwargs):
         return self.DenseMatrix(*args, **kwargs)
@@ -48,8 +73,7 @@ class _SymEngine(_Base):
 
 class _PySym(_Base):
 
-    def __init__(self):
-        self.__sym_backend__ = __import__('pysym')
+    __sym_backend_name__ = 'pysym'
 
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape)
@@ -59,6 +83,7 @@ class _SymCXX(_Base):
 
     def __init__(self):
         self.__sym_backend__ = __import__('symcxx').NameSpace()
+        self._post_init()
 
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape)
@@ -104,3 +129,6 @@ Backend.backends = {
     'pysym': _PySym,
     'symcxx': _SymCXX,
 }
+
+if sys.version_info[0] > 2:
+    Backend.backends['diofant'] = _Diofant

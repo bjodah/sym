@@ -9,6 +9,7 @@ conda create -q -n test3 python=3.5 sympy pysym symcxx pip pytest pytest-cov pyt
 source activate test3
 python setup.py install
 # (cd /; python -m pytest --pyargs $1)
+python -m pip install diofant
 PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html
 ./scripts/coverage_badge.py htmlcov/ htmlcov/coverage.svg
 #source deactivate

@@ -13,8 +13,10 @@ from .. import Backend
 # This tests Lambdify (see SymEngine), it offers essentially the same
 # functionality as SymPy's lambdify but works for arbitrarily long input
 
+_backend_keys = list(Backend.backends.keys())
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+
+@pytest.mark.parametrize('key', _backend_keys)
 def test_Lambdify_single_arg(key):
     be = Backend(key)
     x = be.Symbol('x')
@@ -22,7 +24,7 @@ def test_Lambdify_single_arg(key):
     assert np.allclose([4], lmb([2.0]))
 
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+@pytest.mark.parametrize('key', _backend_keys)
 def test_Lambdify_matrix(key):
     be = Backend(key)
     x, y = arr = be.symarray('x', 2)
@@ -33,7 +35,7 @@ def test_Lambdify_matrix(key):
     assert np.allclose(result, [[3, 6], [90, 3]])
 
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+@pytest.mark.parametrize('key', _backend_keys)
 def test_Lambdify_jacobian(key):
     be = Backend(key)
     x = be.Symbol('x')
@@ -48,7 +50,7 @@ def test_Lambdify_jacobian(key):
 
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
-                                       Backend.backends.keys()))
+                                       _backend_keys))
 def test_broadcast(key):  # test is from symengine test suite
     be = Backend(key)
     a = np.linspace(-np.pi, np.pi)
@@ -62,7 +64,7 @@ def test_broadcast(key):  # test is from symengine test suite
 
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
-                                       Backend.backends.keys()))
+                                       _backend_keys))
 def test_broadcast_shapes(key):  # test is from symengine test suite
     be = Backend(key)
     x, y = be.symbols('x y')
@@ -74,7 +76,7 @@ def test_broadcast_shapes(key):  # test is from symengine test suite
 
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
-                                       Backend.backends.keys()))
+                                       _backend_keys))
 def test_broadcast_multiple_extra_dimensions(key):
     se = Backend(key)
     inp = np.arange(12.).reshape((4, 3, 1))
@@ -90,7 +92,7 @@ def test_broadcast_multiple_extra_dimensions(key):
 
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
-                                       Backend.backends.keys()))
+                                       _backend_keys))
 def test_more_than_255_args(key):
     # SymPy's lambdify can handle at most 255 arguments
     # this is a proof of concept that this limitation does
@@ -113,7 +115,7 @@ def test_more_than_255_args(key):
         assert np.allclose(out, ref)
 
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+@pytest.mark.parametrize('key', _backend_keys)
 def test_Lambdify(key):
     se = Backend(key)
     n = 7
@@ -138,7 +140,7 @@ def _get_2_to_2by2_numpy(se):
     return l, check
 
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+@pytest.mark.parametrize('key', _backend_keys)
 def test_Lambdify_2dim_numpy(key):
     se = Backend(key)
     lmb, check = _get_2_to_2by2_numpy(se)
@@ -149,7 +151,7 @@ def test_Lambdify_2dim_numpy(key):
 
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
-                                       Backend.backends.keys()))
+                                       _backend_keys))
 def test_Lambdify_invalid_args(key):
     se = Backend(key)
     x = se.Symbol('x')
