@@ -15,6 +15,7 @@ from .. import Backend
 
 _backend_keys = list(Backend.backends.keys())
 
+
 @pytest.mark.parametrize('key', _backend_keys)
 def test_Lambdify_single_arg(key):
     be = Backend(key)

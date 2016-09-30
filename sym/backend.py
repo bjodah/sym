@@ -2,6 +2,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 import os
+import sys
 
 from .util import banded_jacobian
 from ._sympy_Lambdify import create_Lambdify
@@ -30,13 +31,14 @@ class _Base(object):
 class _SymPyBase(_Base):
 
     def _post_init(self):
-        _trans = __import__(self.__sym_backend_name__ + '.utilities.lambdify', fromlist=['NUMPY_TRANSLATIONS'])
-        _print = __import__(self.__sym_backend_name__ + '.printing.lambdarepr', fromlist=['NumPyPrinter'])
+        _trans = __import__(self.__sym_backend_name__ + '.utilities.lambdify',
+                            fromlist=['NUMPY_TRANSLATIONS'])
+        _print = __import__(self.__sym_backend_name__ + '.printing.lambdarepr',
+                            fromlist=['NumPyPrinter'])
         self.Lambdify = create_Lambdify(self.MatrixBase, self.sympify,
                                         _print.NumPyPrinter,
                                         self.IndexedBase, self.Symbol,
-                                        _trans.NUMPY_TRANSLATIONS
-        )[0]
+                                        _trans.NUMPY_TRANSLATIONS)[0]
 
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape, real=True)
@@ -48,7 +50,7 @@ class _SymPy(_SymPyBase):
 
 
 class _Diofant(_SymPyBase):
-    
+
     __sym_backend_name__ = 'diofant'
 
 
@@ -126,5 +128,7 @@ Backend.backends = {
     'symengine': _SymEngine,
     'pysym': _PySym,
     'symcxx': _SymCXX,
-    'diofant': _Diofant,
 }
+
+if sys.version_info[0] > 2:
+    Backend.backends['diofant'] = _Diofant

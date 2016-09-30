@@ -87,7 +87,6 @@ def create_Lambdify(MatrixBase, sympify, NumPyPrinter, IndexedBase, Symbol, NUMP
 
         return wrapper
 
-
     def _flatten(mat):
         if isinstance(mat, MatrixBase):
             _mat = []
@@ -97,7 +96,6 @@ def create_Lambdify(MatrixBase, sympify, NumPyPrinter, IndexedBase, Symbol, NUMP
             return _mat  # flattened
         else:
             return _ravel(mat)
-
 
     class _Lambdify(object):
         """ See docstring of symengine.Lambdify """
