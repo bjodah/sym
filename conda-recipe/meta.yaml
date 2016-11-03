@@ -28,6 +28,10 @@ test:
   requires:
     - pytest
     - numpy
+    - sympy
+    - symcxx
+    - python-symengine
+    - pysym
 
   commands:
     - py.test --pyargs {{ name }}
