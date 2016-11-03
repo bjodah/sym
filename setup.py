@@ -78,7 +78,7 @@ setup_kwargs = dict(
     long_description=long_descr,
     classifiers=classifiers,
     author=_author,
-    author_email=_author_email,
+    author_email=_author_email.split('>')[0].strip(),
     url=url,
     license=license,
     packages=[pkg_name] + tests,
@@ -86,7 +86,7 @@ setup_kwargs = dict(
     extras_require=extras_req
 )
 
-if __name__ == '__main__':
+if __name__ == '__main__1':
     try:
         if TAGGED_RELEASE:
             # Same commit should generate different sdist
