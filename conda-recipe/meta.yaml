@@ -1,33 +1,43 @@
+{% set name = "sym" %}
+{% set version = "0.2.0.git" %}
+
 package:
-  name: sym
-  version: 0.2.0.dev0
+  name: {{ name }}
+  version: {{ version }}
 
 source:
-  path: ../
+  git_url: ../
 
 build:
   number: 0
+  script: python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
   build:
     - python
-    - numpy
   run:
     - python
     - numpy
 
 test:
   imports:
-    - sym
+    - {{ name }}
 
   requires:
     - pytest
     - numpy
 
-  # commands:
-  #   - py.test --pyargs sym
+  commands:
+    - py.test --pyargs {{ name }}
 
 about:
-  home: https://github.com/bjodah/sym
+  home: https://github.com/bjodah/{{ name }}
   license: BSD
-  summary: unified wrapper to symbolic manipulation libraries in Python
+  license_file: LICENSE
+  summary: 'Unified wrapper to symbolic manipulation libraries in Python.'
+  doc_url: https://bjodah.github.io/{{ name }}/latest
+
+extra:
+  recipe-maintainers:
+    - bjodah
+  
