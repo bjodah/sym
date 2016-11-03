@@ -24,7 +24,7 @@ PKG_UPPER=$(echo $PKG | tr '[:lower:]' '[:upper:]')
 ./scripts/run_tests.sh
 env ${PKG_UPPER}_RELEASE_VERSION=v$VERSION python setup.py sdist
 if [[ -e ./scripts/generate_docs.sh ]]; then
-    env ${PKG_UPPER}_RELEASE_VERSION=v$VERSION ./scripts/generate_docs.sh $4 ${5:-$PKG} v$VERSION
+    env ${PKG_UPPER}_RELEASE_VERSION=v$VERSION ./scripts/generate_docs.sh  # $4 ${5:-$PKG} v$VERSION
 fi
 for CONDA_PY in 2.7 3.4 3.5; do
     for CONDA_NPY in 1.11; do
@@ -44,7 +44,7 @@ echo ""
 echo "    You may now create a new github release at with the tag \"v$VERSION\", here is a link:"
 echo "        https://github.com/$4/${5:-$PKG}/releases/new "
 echo "    name the release \"${PKG}-${VERSION}\", and don't foreget to manually attach the file:"
-echo "        $(pwd)/dist/${PKG}-${VERSION}.tar.gz (sha256: $(openssl sha256 $(pwd)/dist/${PKG}-${VERSION}.tar.gz))"
+echo "        $(openssl sha256 $(pwd)/dist/${PKG}-${VERSION}.tar.gz)"
 echo "    Then run:"
 echo ""
 echo "        $ ./scripts/post_release.sh $1 $SERVER $4"
