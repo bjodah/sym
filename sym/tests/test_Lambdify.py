@@ -13,13 +13,23 @@ from .. import Backend
 # This tests Lambdify (see SymEngine), it offers essentially the same
 # functionality as SymPy's lambdify but works for arbitrarily long input
 
-
 @pytest.mark.parametrize('key', Backend.backends.keys())
 def test_Lambdify_single_arg(key):
     be = Backend(key)
     x = be.Symbol('x')
     lmb = be.Lambdify([x], [x**2])
     assert np.allclose([4], lmb([2.0]))
+
+
+@pytest.mark.parametrize('key', Backend.backends.keys())
+def test_Lambdify_Abs(key):
+    if key == 'symengine':
+        return  # currently no Abs in symengine.py
+
+    be = Backend(key)
+    x = be.Symbol('x')
+    lmb = be.Lambdify([x], [be.Abs(x)])
+    assert np.allclose([2], lmb([-2.0]))
 
 
 @pytest.mark.parametrize('key', Backend.backends.keys())

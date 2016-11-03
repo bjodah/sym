@@ -35,3 +35,24 @@ def banded_jacobian(y, x, ml, mu):
         for ci in range(max(0, ri-ml), min(nx, ri+mu+1)):
             set(ri, ci, y[ri].diff(x[ci]))
     return packed
+
+
+def check_transforms(fw, bw, symbs):
+    """ Verify validity of a pair of forward and backward transformations
+
+    Parameters
+    ----------
+    fw: expression
+        forward transformation
+    bw: expression
+        backward transformation
+    symbs: iterable of symbols
+        the variables that are transformed
+    """
+    for f, b, y in zip(fw, bw, symbs):
+        if f.subs(y, b) - y != 0:
+            raise ValueError('Cannot prove correctness (did you set real=True?) fw: %s'
+                             % str(f))
+        if b.subs(y, f) - y != 0:
+            raise ValueError('Cannot prove correctness (did you set real=True?) bw: %s'
+                             % str(b))
