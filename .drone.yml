@@ -1,0 +1,20 @@
+build:
+  image: bjodah/bjodahimg16dev:latest
+  commands:
+    - export PATH=/opt/miniconda3/bin:$PATH
+    - conda config --add channels bjodah
+    - conda config --add channels symengine/label/dev
+    - conda config --set show_channel_urls True
+    - ./scripts/ci.sh sym
+    - ./scripts/prepare_deploy.sh
+
+deploy:
+
+  rsync:
+    host: hera.physchem.kth.se
+    user: sym
+    port: 22
+    source: deploy/
+    target: ~
+    recursive: true
+    delete: false
