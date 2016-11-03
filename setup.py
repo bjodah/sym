@@ -86,7 +86,7 @@ setup_kwargs = dict(
     extras_require=extras_req
 )
 
-if __name__ == '__main__1':
+if __name__ == '__main__':
     try:
         if TAGGED_RELEASE:
             # Same commit should generate different sdist
