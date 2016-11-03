@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-unified wrapper to symbolic manipulation libraries in Python
+Unified wrapper over symbolic manipulation libraries in Python.
 """
 
 from __future__ import (absolute_import, division, print_function)

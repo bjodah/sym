@@ -188,11 +188,12 @@ def lambdify_numpy_array(args, expr, use_numba=False):
 
     namespace = np.__dict__.copy()
 
-    # NumPyPrinter incomplete: github.com/sympy/sympy/issues/11023
+    # NumPyPrinter incomplete: https://github.com/sympy/sympy/issues/11023
     # we need to read translations from lambdify
     from sympy.utilities.lambdify import NUMPY_TRANSLATIONS
     for k, v in NUMPY_TRANSLATIONS.items():
         namespace[k] = namespace[v]
+    namespace['Abs'] = np.abs
 
     func = eval('lambda x: %s' % estr, namespace)
     if use_numba:

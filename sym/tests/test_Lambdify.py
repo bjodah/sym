@@ -23,6 +23,17 @@ def test_Lambdify_single_arg(key):
 
 
 @pytest.mark.parametrize('key', Backend.backends.keys())
+def test_Lambdify_Abs(key):
+    if key == 'symengine':
+        return  # currently no Abs in symengine.py
+
+    be = Backend(key)
+    x = be.Symbol('x')
+    lmb = be.Lambdify([x], [be.Abs(x)])
+    assert np.allclose([2], lmb([-2.0]))
+
+
+@pytest.mark.parametrize('key', Backend.backends.keys())
 def test_Lambdify_matrix(key):
     be = Backend(key)
     x, y = arr = be.symarray('x', 2)

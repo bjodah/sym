@@ -42,6 +42,7 @@ and include:
 - Numerical evaluation (including "lambdify" support)
 
 see `tests <https://github.com/bjodah/sym/tree/master/sym/tests/>`_ for examples.
+Note that ``pyodesys`` and ``pyneqsys`` also act as test suits for this package.
 
 
 Documentation
