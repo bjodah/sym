@@ -1,3 +1,7 @@
+v0.1.8
+======
+- Provisional support for mpmath, numpy now coerces to float64
+
 v0.1.7
 ======
 - Fix sdist / conda package.
