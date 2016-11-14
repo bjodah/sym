@@ -94,7 +94,6 @@ class _Lambdify(object):
         self.use_numba = use_numba
         self._callbacks = [callback_factory(self.args, expr, module, self.use_numba) for expr in self.exprs]
 
-
     def _evaluate_xreplace(self, inp, out, out_offset):
         for idx in range(self.out_size):
             subsd = dict(zip(self.args, inp))
@@ -179,7 +178,9 @@ def callback_factory(args, expr, module, use_numba=False):
     if module == 'numpy':
         from sympy.utilities.lambdify import NUMPY_TRANSLATIONS as TRANSLATIONS
         from sympy.printing.lambdarepr import NumPyPrinter as Printer
-        lambdarepr = lambda _x: Printer().doprint(_x)
+
+        def lambdarepr(_x):
+            return Printer().doprint(_x)
     else:
         from sympy.printing.lambdarepr import lambdarepr
         if module == 'mpmath':
