@@ -170,3 +170,16 @@ def test_Lambdify_invalid_args(key):
     assert math.isinf(-log([0])[0])
     assert math.isinf(div([0])[0])
     assert math.isinf(-div([-0])[0])
+
+
+def test_Lambdify_mpamath_mpf():
+    import mpmath
+    from mpmath import mpf
+    mpmath.mp.dps = 30
+    p0 = [mpf('0.7'), mpf('1.3')]
+    p1 = [3]
+    be = Backend('sympy')
+    x, y, z = map(be.Symbol, 'xyz')
+    lmb = be.Lambdify([x, y, z], [x*y*z - 1, -1 + be.exp(-y) + be.exp(-z) - 1/x], module='mpmath')
+    p = np.concatenate((p0, p1))
+    lmb(p)
