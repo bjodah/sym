@@ -56,3 +56,38 @@ def check_transforms(fw, bw, symbs):
         if b.subs(y, f) - y != 0:
             raise ValueError('Cannot prove correctness (did you set real=True?) bw: %s'
                              % str(b))
+
+
+def _map2(cb, iterable):
+    if cb is None:  # identity function is assumed
+        return iterable
+    else:
+        return map(cb, iterable)
+
+
+def _map2l(cb, iterable):  # Py2 type of map in Py3
+    return list(_map2(cb, iterable))
+
+
+def linear_rref(A, b, backend):
+    """ Transform a linear system to reduced row-echelon form
+
+    Transforms both the matrix and right-hand side of a linear
+    system of equations to reduced row echelon form
+
+    Parameters
+    ----------
+    A: Matrix-like
+        iterable of rows
+    b: iterable
+
+    Returns
+    -------
+    A', b' - transformed versions
+
+    """
+    mat_rows = [_map2l(backend.S, list(row) + [v]) for row, v in zip(A.tolist(), b)]
+    aug = backend.Matrix(mat_rows)
+    raug, colidxs = aug.rref()
+    nindep = len(colidxs)
+    return raug[:nindep, :-1], raug[:nindep, -1], colidxs
