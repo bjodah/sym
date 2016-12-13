@@ -7,9 +7,10 @@ fi
 # Py2
 conda create -q -n test2 python=2.7 sympy pysym symcxx pip pytest python-symengine
 source activate test2
-python setup.py sdist
-pip install dist/*.tar.gz
-(cd /; python -m pytest --pyargs $1)
+python2 setup.py sdist
+ORIPATH=$(pwd)
+(cd /; python2 -m pip install $ORIPATH/dist/*.tar.gz)
+(cd /; python2 -m pytest --pyargs $1)
 source deactivate
 
 # Py3
@@ -25,4 +26,5 @@ PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html
 
 python3 -m pip install --user .[all]
 ./scripts/render_examples.sh
+python3 -m pip install --user --force-reinstall docutils==0.12  # see https://github.com/sphinx-doc/sphinx/pull/3217
 ./scripts/generate_docs.sh
