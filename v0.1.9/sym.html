@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sym package &mdash; sym 0.1.9 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="sym 0.1.9 documentation" href="index.html"/>
+        <link rel="prev" title="Welcome to sym’s documentation!" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> sym
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">sym package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sym.backend">sym.backend module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sym.util">sym.util module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">sym</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>sym package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/sym.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-sym">
+<span id="sym-package"></span><h1>sym package<a class="headerlink" href="#module-sym" title="Permalink to this headline">¶</a></h1>
+<p>Unified wrapper over symbolic manipulation libraries in Python.</p>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-sym.backend">
+<span id="sym-backend-module"></span><h2>sym.backend module<a class="headerlink" href="#module-sym.backend" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="sym.backend.Backend">
+<code class="descclassname">sym.backend.</code><code class="descname">Backend</code><span class="sig-paren">(</span><em>name=None</em>, <em>envvar='SYM_BACKEND'</em>, <em>default='sympy'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sym/backend.html#Backend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sym.backend.Backend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Backend for the underlying symbolic manipulation pacages</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name: str (default: None)</strong></p>
+<blockquote>
+<div><p>Name of package e.g. &#8216;sympy&#8217;</p>
+</div></blockquote>
+<p><strong>envvar: str (default: &#8216;SYM_BACKEND&#8217;)</strong></p>
+<blockquote>
+<div><p>name of environmentvariable to read name from (when name is <code class="docutils literal"><span class="pre">None</span></code>)</p>
+</div></blockquote>
+<p><strong>default: str</strong></p>
+<blockquote class="last">
+<div><p>name to use when the environment variable described by <code class="docutils literal"><span class="pre">envvar</span></code> is
+unset or empty (default: &#8216;sympy&#8217;)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="s1">&#39;sympy&#39;</span><span class="p">)</span>  <span class="c1"># or e.g. &#39;symengine&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">Symbol</span><span class="p">,</span> <span class="s1">&#39;xy&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lmb</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">Lambdify</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="n">exprs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lmb</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">6.0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+<span class="go">array([[   2.,    0.],</span>
+<span class="go">       [   6.,   18.],</span>
+<span class="go">       [  10.,  100.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-sym.util">
+<span id="sym-util-module"></span><h2>sym.util module<a class="headerlink" href="#module-sym.util" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="sym.util.banded_jacobian">
+<code class="descclassname">sym.util.</code><code class="descname">banded_jacobian</code><span class="sig-paren">(</span><em>y</em>, <em>x</em>, <em>ml</em>, <em>mu</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sym/util.html#banded_jacobian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sym.util.banded_jacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a banded version of the jacobian</p>
+<p>Compatible with the format requested by
+<code class="xref py py-func docutils literal"><span class="pre">scipy.integrate.ode()</span></code> (for SciPy &gt;= v0.15).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>y: array_like of expressions</strong></p>
+<p><strong>x: array_like of symbols</strong></p>
+<p><strong>ml: int</strong></p>
+<blockquote>
+<div><p>number of lower bands</p>
+</div></blockquote>
+<p><strong>mu: int</strong></p>
+<blockquote>
+<div><p>number of upper bands</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">2D array of shape <code class="docutils literal"><span class="pre">(1+ml+mu,</span> <span class="pre">len(y))</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sym.util.check_transforms">
+<code class="descclassname">sym.util.</code><code class="descname">check_transforms</code><span class="sig-paren">(</span><em>fw</em>, <em>bw</em>, <em>symbs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sym/util.html#check_transforms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sym.util.check_transforms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify validity of a pair of forward and backward transformations</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>fw: expression</strong></p>
+<blockquote>
+<div><p>forward transformation</p>
+</div></blockquote>
+<p><strong>bw: expression</strong></p>
+<blockquote>
+<div><p>backward transformation</p>
+</div></blockquote>
+<p><strong>symbs: iterable of symbols</strong></p>
+<blockquote class="last">
+<div><p>the variables that are transformed</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sym.util.linear_rref">
+<code class="descclassname">sym.util.</code><code class="descname">linear_rref</code><span class="sig-paren">(</span><em>A</em>, <em>b</em>, <em>backend</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sym/util.html#linear_rref"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sym.util.linear_rref" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform a linear system to reduced row-echelon form</p>
+<p>Transforms both the matrix and right-hand side of a linear
+system of equations to reduced row echelon form</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>A: Matrix-like</strong></p>
+<blockquote>
+<div><p>iterable of rows</p>
+</div></blockquote>
+<p><strong>b: iterable</strong></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A&#8217;, b&#8217; - transformed versions</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to sym’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Bjoern I. Dahlgren &lt;bjodah@gmail.com&gt;.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.9',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
