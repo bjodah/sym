@@ -1,0 +1,304 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to sym’s documentation! &mdash; sym 0.2.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="sym 0.2.0 documentation" href="#"/>
+        <link rel="next" title="sym package" href="sym.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> sym
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="sym.html">sym package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">sym</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+      
+    <li>Welcome to sym&#8217;s documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-sym-s-documentation">
+<h1>Welcome to sym&#8217;s documentation!<a class="headerlink" href="#welcome-to-sym-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sym.html">sym package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sym.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sym.html#module-sym.backend">sym.backend module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sym.html#module-sym.util">sym.util module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+<div class="section" id="sym">
+<h1>sym<a class="headerlink" href="#sym" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="http://hera.physchem.kth.se:9090/bjodah/sym"><img alt="Build status" src="http://hera.physchem.kth.se:9090/api/badges/bjodah/sym/status.svg" /></a>
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/sym"><img alt="PyPI version" src="https://img.shields.io/pypi/v/sym.svg" /></a>
+<a class="reference external image-reference" href="https://www.python.org/"><img alt="Python version" src="https://img.shields.io/badge/python-2.7,3.5-blue.svg" /></a>
+<a class="reference external image-reference" href="https://github.com/bjodah/sym/blob/master/LICENSE"><img alt="License" src="https://img.shields.io/pypi/l/sym.svg" /></a>
+<a class="reference external image-reference" href="http://hera.physchem.kth.se/~sym/benchmarks"><img alt="airspeedvelocity" src="http://img.shields.io/badge/benchmarked%20by-asv-green.svg?style=flat" /></a>
+<a class="reference external image-reference" href="http://hera.physchem.kth.se/~sym/branches/master/htmlcov"><img alt="coverage" src="http://hera.physchem.kth.se/~sym/branches/master/htmlcov/coverage.svg" /></a>
+<p><a class="reference external" href="https://github.com/bjodah/sym">sym</a> provides a unified wrapper to some
+symbolic manipulation libraries in Python. It makes it easy for library authors
+to test their packages against several symbolic manipulation libraries.</p>
+<p>Currently the following Python pacakges are available as &#8220;backends&#8221;:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://github.com/sympy/sympy">SymPy</a></li>
+<li><a class="reference external" href="https://github.com/symengine/symengine.py">SymEngine</a></li>
+<li><a class="reference external" href="https://github.com/bjodah/pysym">PySym</a></li>
+<li><a class="reference external" href="https://github.com/bjodah/symcxx">SymCXX</a></li>
+</ul>
+</div></blockquote>
+<p>The capabilities exposed here are those needed by</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://pypi.python.org/pypi/pyodesys">pyodesys</a></li>
+<li><a class="reference external" href="https://pypi.python.org/pypi/pyneqsys">pyneqsys</a></li>
+</ul>
+</div></blockquote>
+<p>and include:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Differentiation</li>
+<li>Numerical evaluation (including &#8220;lambdify&#8221; support)</li>
+</ul>
+</div></blockquote>
+<p>see <a class="reference external" href="https://github.com/bjodah/sym/tree/master/sym/tests/">tests</a> for examples.
+Note that <code class="docutils literal"><span class="pre">pyodesys</span></code> and <code class="docutils literal"><span class="pre">pyneqsys</span></code> also act as test suits for this package.</p>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>Auto-generated API documentation for the latest stable release is found here:
+<a class="reference external" href="https://bjodah.github.io/sym/latest">https://bjodah.github.io/sym/latest</a>
+(and the development version for the current master branch is found here:
+<a class="reference external" href="http://hera.physchem.kth.se/~sym/branches/master/html">http://hera.physchem.kth.se/~sym/branches/master/html</a>).</p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Simplest way to install sym and its (optional) dependencies is to use pip:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install --user sym pytest
+$ python -m pytest --pyargs sym
+</pre></div>
+</div>
+<p>or the <a class="reference external" href="http://conda.pydata.org/docs/">conda package manager</a>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ conda install -c bjodah sym pytest
+$ python -m pytest --pyargs sym
+</pre></div>
+</div>
+<p>Source distribution is available here:
+<a class="reference external" href="https://pypi.python.org/pypi/sym">https://pypi.python.org/pypi/sym</a></p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>Differentiation</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sym</span> <span class="k">import</span> <span class="n">Backend</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">be</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="s1">&#39;pysym&#39;</span><span class="p">)</span>  <span class="c1"># just an example, use SymPy rather than pysym</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">be</span><span class="o">.</span><span class="n">Symbol</span><span class="p">,</span> <span class="s1">&#39;x y&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expr</span> <span class="o">=</span> <span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">be</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="go">((y**2) - ((1 + (tan((2*x))**2))*2))</span>
+</pre></div>
+</div>
+<p>for more examples, see <a class="reference external" href="https://github.com/bjodah/sym/tree/master/examples">examples/</a>, and rendered jupyter notebooks here:
+<a class="reference external" href="http://hera.physchem.kth.se/~sym/master/examples">http://hera.physchem.kth.se/~sym/master/examples</a></p>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>The source code is Open Source and is released under the simplified 2-clause BSD license. See <a class="reference external" href="LICENSE">LICENSE</a> for further details.
+Contributors are welcome to suggest improvements at <a class="reference external" href="https://github.com/bjodah/sym">https://github.com/bjodah/sym</a></p>
+</div>
+<div class="section" id="author">
+<h2>Author<a class="headerlink" href="#author" title="Permalink to this headline">¶</a></h2>
+<p>Björn I. Dahlgren, contact:</p>
+<ul class="simple">
+<li>gmail address: bjodah</li>
+<li>kth.se address: bda</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="sym.html" class="btn btn-neutral float-right" title="sym package" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Bjoern I. Dahlgren &lt;bjodah@gmail.com&gt;.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.2.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
