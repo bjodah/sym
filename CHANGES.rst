@@ -1,3 +1,7 @@
+v0.2.0
+======
+- linear_rref now handles symbolic entries in the augmented part.
+
 v0.1.8
 ======
 - Provisional support for mpmath, numpy now coerces to float64
