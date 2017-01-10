@@ -65,14 +65,14 @@ class _SymCXX(_Base):
 
 
 def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
-    """ Backend for the underlying symbolic manipulation pacages
+    """ Backend for the underlying symbolic manipulation packages
 
     Parameters
     ----------
     name: str (default: None)
         Name of package e.g. 'sympy'
     envvar: str (default: 'SYM_BACKEND')
-        name of environmentvariable to read name from (when name is ``None``)
+        name of environment variable to read name from (when name is ``None``)
     default: str
         name to use when the environment variable described by ``envvar`` is
         unset or empty (default: 'sympy')
