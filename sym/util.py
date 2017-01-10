@@ -86,8 +86,14 @@ def linear_rref(A, b, backend):
     A', b' - transformed versions
 
     """
-    mat_rows = [_map2l(backend.S, list(row) + [v]) for row, v in zip(A.tolist(), b)]
-    aug = backend.Matrix(mat_rows)
-    raug, colidxs = aug.rref()
-    nindep = len(colidxs)
-    return raug[:nindep, :-1], raug[:nindep, -1], colidxs
+    try:
+        b = b.as_mutable()
+    except:
+        b = backend.MutableMatrix(b)
+
+    try:
+        rA, colidxs = A.rref(aug=b)
+    except TypeError:
+        from ._sympy_rref_aug import rref_aug
+        rA, colidxs = rref_aug(A, aug=b)
+    return rA, b, colidxs
