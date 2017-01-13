@@ -91,9 +91,8 @@ def linear_rref(A, b, backend):
     except:
         b = backend.MutableMatrix(b)
 
-    try:
-        rA, colidxs = A.rref(aug=b)
-    except TypeError:
-        from ._sympy_rref_aug import rref_aug
-        rA, colidxs = rref_aug(A, aug=b)
-    return rA, b, colidxs
+    Aug = A.col_insert(A.cols, backend.eye(A.rows))
+    rAug, pivots = Aug.rref()
+    colidxs = [i for i in pivots if i < A.cols]
+    b = backend.Matrix(rAug[:, A.cols:]*b)
+    return rAug[:, :A.cols], b, colidxs

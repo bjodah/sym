@@ -36,25 +36,3 @@ def test_linear_rref_aug(key):
     ])
     delta1b.simplify()
     assert R1b == be.eye(3) and pivots1b == [0, 1, 2] and delta1b == be.Matrix([[0], [0], [0]])
-
-    A2 = be.Matrix([[0, 1, -1], [2, 1, 1], [1, 0, 1]])
-    B2 = [[x], [y], [z]]
-    R2, B2, pivots2 = linear_rref(A2, B2, backend=be)
-    assert R2 == be.Matrix([[1, 0, 1], [0, 1, -1], [0, 0, 0]]) and pivots2 == [0, 1]
-    delta2 = (B2[:2, :] - be.Matrix([
-        [(y - x)/2],
-        [x]
-    ]))
-    delta2.simplify()
-    assert delta2 == be.Matrix([[0], [0]])
-
-    A3 = be.Matrix([[-1, 0, 1], [1, 2, 1], [1, 1, 0]])
-    B3 = [[x], [y], [z]]
-    R3, B3, pivots3 = linear_rref(A3, B3, backend=be)
-    assert R3 == be.Matrix([[1, 0, -1], [0, 1, 1], [0, 0, 0]]) and pivots3 == [0, 1]
-    delta3 = (B3[:2, :] - be.Matrix([
-        [-x],
-        [(x + y)/2]
-    ]))
-    delta3.simplify()
-    assert delta3 == be.Matrix([[0], [0]])
