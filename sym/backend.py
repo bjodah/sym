@@ -2,6 +2,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 import os
+import sys
 
 from .util import banded_jacobian
 
@@ -26,6 +27,16 @@ class _SymPy(_Base):
 
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape, real=True)
+
+
+class _Diofant(_SymPy):
+
+    def __init__(self):
+        self.__sym_backend__ = __import__('diofant')
+        from ._sympy_Lambdify import _Lambdify
+        self.Lambdify = _Lambdify
+
+    __sym_backend_name__ = 'diofant'
 
 
 class _SymEngine(_Base):
@@ -104,3 +115,6 @@ Backend.backends = {
     'pysym': _PySym,
     'symcxx': _SymCXX,
 }
+
+if sys.version_info[0] > 2:
+    Backend.backends['diofant'] = _Diofant
