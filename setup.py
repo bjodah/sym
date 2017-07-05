@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
 import io
 from itertools import chain
 import os
@@ -69,8 +68,6 @@ extras_req = {
     'docs': ['Sphinx', 'sphinx_rtd_theme', 'numpydoc'],
     'testing': ['pytest', 'pytest-cov', 'pytest-flakes', 'pytest-pep8']
 }
-if sys.version_info[0] > 2:
-    extras_req['symbolic'].append('diofant')
 extras_req['all'] = list(chain(extras_req.values()))
 
 
