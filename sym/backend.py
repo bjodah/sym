@@ -34,7 +34,13 @@ class _Diofant(_SymPy):
     def __init__(self):
         self.__sym_backend__ = __import__('diofant')
         from ._sympy_Lambdify import _Lambdify
-        self.Lambdify = _Lambdify
+
+        class DiofantLambdify(_Lambdify):
+            def __init__(self, args, exprs, real=True, module='numpy',
+                         use_numba=None, backend='diofant'):
+                super().__init__(args, exprs, real, module, use_numba, backend)
+
+        self.Lambdify = DiofantLambdify
 
     __sym_backend_name__ = 'diofant'
 

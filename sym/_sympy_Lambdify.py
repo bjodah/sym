@@ -7,8 +7,6 @@ from functools import reduce
 from itertools import product
 from operator import mul
 
-from sympy import MatrixBase, sympify
-
 # Note that this is a reimplementation of symengine.Lambdify
 
 
@@ -60,8 +58,8 @@ def _ravel(ndarr):
         return _ravel_nested(ndarr)
 
 
-def _flatten(mat):
-    if isinstance(mat, MatrixBase):
+def _flatten(mat, backend):
+    if isinstance(mat, backend.MatrixBase):
         _mat = []
         for ri in range(mat.shape[0]):
             for ci in range(mat.shape[1]):
@@ -77,12 +75,15 @@ class _Lambdify(object):
     # If any modifications are to be made, they need to be implemented
     # in symengine.Lambdify *first*, and then reimplemented here.
 
-    def __init__(self, args, exprs, real=True, module='numpy', use_numba=None):
+    def __init__(self, args, exprs, real=True, module='numpy',
+                 use_numba=None, backend='sympy'):
+        self._backend = __import__(backend)
         self.out_shape = _get_shape(exprs)
         self.args_size = _size(args)
         self.out_size = reduce(mul, self.out_shape)
-        self.args = _flatten(args)
-        self.exprs = [sympify(expr) for expr in _flatten(exprs)]
+        self.args = _flatten(args, self._backend)
+        self.exprs = [self._backend.sympify(expr)
+                      for expr in _flatten(exprs, self._backend)]
         if self.out_size != len(self.exprs):
             raise ValueError("Sanity-check failed: bug in %s" % self.__class__)
         self.real = real
@@ -92,7 +93,9 @@ class _Lambdify(object):
         elif use_numba and module != 'numpy':
             raise ValueError("Numba only available when using numpy as module.")
         self.use_numba = use_numba
-        self._callbacks = [callback_factory(self.args, expr, module, self.use_numba) for expr in self.exprs]
+        self._callbacks = [callback_factory(self.args, expr, module,
+                                            self.use_numba, backend)
+                           for expr in self.exprs]
 
     def _evaluate_xreplace(self, inp, out, out_offset):
         for idx in range(self.out_size):
@@ -174,30 +177,34 @@ class _Lambdify(object):
         return out
 
 
-def callback_factory(args, expr, module, use_numba=False):
+def callback_factory(args, expr, module, use_numba=False, backend='sympy'):
     if module == 'numpy':
-        from sympy.utilities.lambdify import NUMPY_TRANSLATIONS as TRANSLATIONS
-        from sympy.printing.lambdarepr import NumPyPrinter as Printer
+        TRANSLATIONS = __import__(backend + '.utilities.lambdify',
+                                  fromlist=['NUMPY_TRANSLATIONS']).NUMPY_TRANSLATIONS
+        Printer = __import__(backend + '.printing.lambdarepr',
+                             fromlist=['NumPyPrinter']).NumPyPrinter
 
         def lambdarepr(_x):
             return Printer().doprint(_x)
     else:
-        from sympy.printing.lambdarepr import lambdarepr
+        lambdarepr = __import__(backend + '.printing.lambdarepr',
+                                fromlist=['lambdarepr']).lambdarepr
         if module == 'mpmath':
-            from sympy.utilities.lambdify import MPMATH_TRANSLATIONS as TRANSLATIONS
+            TRANSLATIONS = __import__(backend + '.utilities.lambdify',
+                                      fromlist=['MPMATH_TRANSLATIONS']).MPMATH_TRANSLATIONS
         elif module == 'sympy':
             TRANSLATIONS = {}
         else:
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
-    mod = __import__(module)
-    from sympy import IndexedBase, Symbol
-    x = IndexedBase('x')
-    indices = [Symbol('..., %d' % i) for i in range(len(args))]
+    mod = __import__(backend)
+    x = mod.IndexedBase('x')
+    indices = [mod.Symbol('..., %d' % i) for i in range(len(args))]
     dummy_subs = dict(zip(args, [x[i] for i in indices]))
     dummified = expr.xreplace(dummy_subs)
     estr = lambdarepr(dummified)
 
+    mod = __import__(module)
     namespace = mod.__dict__.copy()
 
     # e.g. NumPyPrinter incomplete: https://github.com/sympy/sympy/issues/11023
