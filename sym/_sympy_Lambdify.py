@@ -179,8 +179,28 @@ class _Lambdify(object):
 
 def callback_factory(args, expr, module, use_numba=False, backend='sympy'):
     if module == 'numpy':
-        TRANSLATIONS = __import__(backend + '.utilities.lambdify',
-                                  fromlist=['NUMPY_TRANSLATIONS']).NUMPY_TRANSLATIONS
+        TRANSLATIONS = {
+            "acos": "arccos",
+            "acosh": "arccosh",
+            "arg": "angle",
+            "asin": "arcsin",
+            "asinh": "arcsinh",
+            "atan": "arctan",
+            "atan2": "arctan2",
+            "atanh": "arctanh",
+            "ceiling": "ceil",
+            "E": "e",
+            "im": "imag",
+            "ln": "log",
+            "Mod": "mod",
+            "oo": "inf",
+            "re": "real",
+            "SparseMatrix": "array",
+            "ImmutableSparseMatrix": "array",
+            "Matrix": "array",
+            "MutableDenseMatrix": "array",
+            "ImmutableDenseMatrix": "array",
+        }
         Printer = __import__(backend + '.printing.lambdarepr',
                              fromlist=['NumPyPrinter']).NumPyPrinter
 
@@ -190,8 +210,33 @@ def callback_factory(args, expr, module, use_numba=False, backend='sympy'):
         lambdarepr = __import__(backend + '.printing.lambdarepr',
                                 fromlist=['lambdarepr']).lambdarepr
         if module == 'mpmath':
-            TRANSLATIONS = __import__(backend + '.utilities.lambdify',
-                                      fromlist=['MPMATH_TRANSLATIONS']).MPMATH_TRANSLATIONS
+            TRANSLATIONS = {
+                "Abs": "fabs",
+                "elliptic_k": "ellipk",
+                "elliptic_f": "ellipf",
+                "elliptic_e": "ellipe",
+                "elliptic_pi": "ellippi",
+                "ceiling": "ceil",
+                "chebyshevt": "chebyt",
+                "chebyshevu": "chebyu",
+                "E": "e",
+                "I": "j",
+                "ln": "log",
+                #"lowergamma":"lower_gamma",
+                "oo": "inf",
+                #"uppergamma":"upper_gamma",
+                "LambertW": "lambertw",
+                "MutableDenseMatrix": "matrix",
+                "ImmutableDenseMatrix": "matrix",
+                "conjugate": "conj",
+                "dirichlet_eta": "altzeta",
+                "Ei": "ei",
+                "Shi": "shi",
+                "Chi": "chi",
+                "Si": "si",
+                "Ci": "ci"
+            }
+
         elif module == 'sympy':
             TRANSLATIONS = {}
         else:
