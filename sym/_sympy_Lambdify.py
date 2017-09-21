@@ -126,7 +126,11 @@ class _Lambdify(object):
                 raise ValueError("Output argument needs to be writeable")
             out = out.ravel(order=self.order)
 
-        out.flat = self._callback(inp)
+        res_exprs = self._callback(inp)
+        assert len(res_exprs) == self.tot_out_size
+        for idx, res in enumerate(res_exprs):
+            out.flat[idx::self.tot_out_size] = res
+        #out.flat = self._callback(inp)
 
         if self.order == 'C':
             out = out.reshape((nbroadcast, self.tot_out_size), order='C')
@@ -145,10 +149,10 @@ class _Lambdify(object):
         else:
             return result
 
-def _transpose(arrs):
-    tot_arr = np.concatenate(arrs)
-    print(tot_arr)
-    return np.transpose(tot_arr, tuple(range(1, tot_arr.ndim)) + (0,))
+# def _transpose(arrs):
+    #tot_arr = np.array(arrs)  # np.concatenate(list(map(np.atleast_1d, arrs)), axis=-1)
+    #print(tot_arr)
+    #return np.transpose(tot_arr, tuple(range(1, tot_arr.ndim)) + (0,))
     # return np.concatenate([np.asanyarray(a)[..., None] for a in arrs])
 
 def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy'):
@@ -237,9 +241,9 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
 
     namespace['numpy'] = np
     namespace['math'] = math
-    namespace['_transpose'] = _transpose
+    # namespace['_transpose'] = _transpose
 
-    func = eval('lambda x: _transpose(%s)' % estr, namespace)
+    func = eval('lambda x: %s' % estr, namespace)
     if use_numba:
         from numba import njit
         func = njit(func)
