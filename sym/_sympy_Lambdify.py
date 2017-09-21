@@ -146,7 +146,7 @@ class _Lambdify(object):
             return result
 
 def _transpose(arrs):
-    tot_arr = np.array(arrs)
+    tot_arr = np.concatenate(arrs)
     print(tot_arr)
     return np.transpose(tot_arr, tuple(range(1, tot_arr.ndim)) + (0,))
     # return np.concatenate([np.asanyarray(a)[..., None] for a in arrs])
