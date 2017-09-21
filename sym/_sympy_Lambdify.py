@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function)
 
+import math
 import os
 import array
 from functools import reduce
 from itertools import product
 from operator import mul
 
-import nupmy as np  # Lambdify requires numpy
+import numpy as np  # Lambdify requires numpy
 
 
 class _Lambdify(object):
@@ -25,7 +26,7 @@ class _Lambdify(object):
         self.out_shapes = [expr.shape for expr in self.exprs]
         self.n_exprs = len(self.exprs)
 
-        self.out_sizes, self.accum_out_sizes = [], []
+        out_sizes, self.accum_out_sizes = [], []
         self.tot_out_size = 0
         for idx, shape in enumerate(self.out_shapes):
             out_sizes.append(reduce(mul, shape or (1,)))
@@ -35,17 +36,17 @@ class _Lambdify(object):
             for j in range(i):
                 self.accum_out_sizes[i] += out_sizes[j]
 
-        self.args_, self.outs_ = [], []
+        args_, outs_ = [], []
+        self.order = order
         for arg in np.ravel(self.args, order=self.order):
-            args_.append(_sympify(arg))
+            args_.append(self._backend.sympify(arg))
 
         for curr_expr in self.exprs:
             if curr_expr.ndim == 0:
-                outs_.append(_sympify(curr_expr.item()))
+                outs_.append(self._backend.sympify(curr_expr.item()))
             else:
                 for e in np.ravel(curr_expr, order=self.order):
-                    e_ =
-                    outs_.append(_sympify(e))
+                    outs_.append(self._backend.sympify(e))
 
         self.real = real
         self.numpy_dtype = np.float64 if self.real else np.complex128
@@ -55,7 +56,8 @@ class _Lambdify(object):
         elif use_numba and module != 'numpy':
             raise ValueError("Numba only available when using numpy as module.")
         self.use_numba = use_numba
-        self._callback = callback_factory(self.args_, self.outs_, module, self.use_numba, backend)
+        self._callback = _callback_factory(args_, outs_, module, self.numpy_dtype,
+                                           self.order, self.use_numba, backend)
 
 
     def __call__(self, inp, out=None):
@@ -124,7 +126,7 @@ class _Lambdify(object):
                 raise ValueError("Output argument needs to be writeable")
             out = out.ravel(order=self.order)
 
-        out[(Ellipsis,)] = self.callback(inp)
+        out.flat = self._callback(inp)
 
         if self.order == 'C':
             out = out.reshape((nbroadcast, self.tot_out_size), order='C')
@@ -143,8 +145,13 @@ class _Lambdify(object):
         else:
             return result
 
+def _transpose(arrs):
+    tot_arr = np.array(arrs)
+    print(tot_arr)
+    return np.transpose(tot_arr, tuple(range(1, tot_arr.ndim)) + (0,))
+    # return np.concatenate([np.asanyarray(a)[..., None] for a in arrs])
 
-def callback_factory(args, expr, module, use_numba=False, backend='sympy'):
+def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy'):
     if module == 'numpy':
         TRANSLATIONS = {
             "acos": "arccos",
@@ -210,10 +217,11 @@ def callback_factory(args, expr, module, use_numba=False, backend='sympy'):
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
     mod = __import__(backend)
-    x = mod.IndexedBase('x')
-    indices = [mod.Symbol('..., %d' % i) for i in range(len(args))]
-    dummy_subs = dict(zip(args, [x[i] for i in indices]))
-    dummified = expr.xreplace(dummy_subs)
+    #x = mod.IndexedBase('x')
+    ordering = '..., %d' if order == 'C' else '%d, ...'
+    indices = [mod.Symbol(ordering % i) for i in range(len(args))]
+    dummy_subs = dict(zip(args, [mod.Symbol('x[%s]' % i) for i in indices]))
+    dummified = [expr.xreplace(dummy_subs) for expr in flat_exprs]
     estr = lambdarepr(dummified)
 
     mod = __import__(module)
@@ -227,13 +235,17 @@ def callback_factory(args, expr, module, use_numba=False, backend='sympy'):
     if module != 'mpmath':
         namespace['Abs'] = abs
 
-    func = eval('lambda x: %s' % estr, namespace)
+    namespace['numpy'] = np
+    namespace['math'] = math
+    namespace['_transpose'] = _transpose
+
+    func = eval('lambda x: _transpose(%s)' % estr, namespace)
     if use_numba:
         from numba import njit
         func = njit(func)
     if module == 'numpy':
         def wrapper(x):
-            return func(mod.asarray(x, dtype=mod.float64))
+            return func(np.asanyarray(x, dtype=dtype))
     else:
         wrapper = func
     wrapper.__doc__ = estr

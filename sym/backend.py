@@ -7,6 +7,14 @@ import sys
 from .util import banded_jacobian
 
 
+def _DenseMatrix(be, *args, **kwargs):
+        if len(args) == 1:
+            return be.Matrix(len(args[0]), 1, args[0], **kwargs)
+        else:
+            nr, nc, elems = args
+            return be.Matrix(nr, nc, elems, **kwargs)
+
+
 class _Base(object):
 
     def __getattr__(self, key):
@@ -28,6 +36,9 @@ class _SymPy(_Base):
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape, real=True)
 
+    DenseMatrix = _DenseMatrix
+
+
 class _SymPySymEngine(_SymPy):
 
     def __init__(self):
@@ -43,11 +54,12 @@ class _Diofant(_SymPy):
         from ._sympy_Lambdify import _Lambdify
 
         class DiofantLambdify(_Lambdify):
-            def __init__(self, args, exprs, real=True, module='numpy',
-                         use_numba=None, backend='diofant'):
-                super().__init__(args, exprs, real, module, use_numba, backend)
+            def __init__(self, args, *exprs, backend='diofant', **kwargs):
+                super().__init__(args, *exprs, backend=backend, **kwargs)
 
         self.Lambdify = DiofantLambdify
+
+    DenseMatrix = _DenseMatrix
 
     __sym_backend_name__ = 'diofant'
 
@@ -78,6 +90,8 @@ class _PySym(_Base):
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape)
 
+    DenseMatrix = _DenseMatrix
+
 
 class _SymCXX(_Base):
 
@@ -86,6 +100,8 @@ class _SymCXX(_Base):
 
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape)
+
+    DenseMatrix = _DenseMatrix
 
 
 def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
