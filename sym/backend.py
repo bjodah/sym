@@ -54,8 +54,9 @@ class _Diofant(_SymPy):
         from ._sympy_Lambdify import _Lambdify
 
         class DiofantLambdify(_Lambdify):
-            def __init__(self, args, *exprs, backend='diofant', **kwargs):
-                super().__init__(args, *exprs, backend=backend, **kwargs)
+            def __init__(self, args, *exprs, **kwargs):
+                kwargs['backend'] = 'diofant'
+                super().__init__(args, *exprs, **kwargs)
 
         self.Lambdify = DiofantLambdify
 

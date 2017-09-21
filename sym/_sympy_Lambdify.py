@@ -126,11 +126,10 @@ class _Lambdify(object):
                 raise ValueError("Output argument needs to be writeable")
             out = out.ravel(order=self.order)
 
-        res_exprs = self._callback(inp)
+        res_exprs = self._callback(inp.reshape((nbroadcast, inp.size//nbroadcast)))
         assert len(res_exprs) == self.tot_out_size
         for idx, res in enumerate(res_exprs):
             out.flat[idx::self.tot_out_size] = res
-        #out.flat = self._callback(inp)
 
         if self.order == 'C':
             out = out.reshape((nbroadcast, self.tot_out_size), order='C')
@@ -249,7 +248,11 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         func = njit(func)
     if module == 'numpy':
         def wrapper(x):
-            return func(np.asanyarray(x, dtype=dtype))
+            arg = np.atleast_1d(np.asanyarray(x, dtype=dtype))
+            res = func(arg)
+            print(arg) # DO-NOT-MERGE!
+            print(res) # DO-NOT-MERGE!
+            return res
     else:
         wrapper = func
     wrapper.__doc__ = estr
