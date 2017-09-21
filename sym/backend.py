@@ -28,6 +28,13 @@ class _SymPy(_Base):
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape, real=True)
 
+class _SymPySymEngine(_SymPy):
+
+    def __init__(self):
+        self.__sym_backend__ = __import__('sympy')
+        from symengine import Lambdify, symarray
+        self.Lambdify = Lambdify
+        #self.real_symarray = symarray
 
 class _Diofant(_SymPy):
 
@@ -118,6 +125,7 @@ def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
 Backend.backends = {
     'sympy': _SymPy,
     'symengine': _SymEngine,
+    'sympysymengine': _SymPySymEngine,  # uses selected parts from SymEngine to augment SymPy
     'pysym': _PySym,
     'symcxx': _SymCXX,
 }
