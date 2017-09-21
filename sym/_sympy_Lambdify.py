@@ -126,7 +126,9 @@ class _Lambdify(object):
                 raise ValueError("Output argument needs to be writeable")
             out = out.ravel(order=self.order)
 
-        res_exprs = self._callback(inp.reshape((nbroadcast, inp.size//nbroadcast)))
+        res_exprs = self._callback(inp if nbroadcast == 1 else inp.reshape(
+            (nbroadcast, inp.size//nbroadcast) if self.order == 'C' else (inp.size//nbroadcast, nbroadcast)
+        ))
         assert len(res_exprs) == self.tot_out_size
         for idx, res in enumerate(res_exprs):
             out.flat[idx::self.tot_out_size] = res
@@ -148,11 +150,6 @@ class _Lambdify(object):
         else:
             return result
 
-# def _transpose(arrs):
-    #tot_arr = np.array(arrs)  # np.concatenate(list(map(np.atleast_1d, arrs)), axis=-1)
-    #print(tot_arr)
-    #return np.transpose(tot_arr, tuple(range(1, tot_arr.ndim)) + (0,))
-    # return np.concatenate([np.asanyarray(a)[..., None] for a in arrs])
 
 def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy'):
     if module == 'numpy':
@@ -242,7 +239,8 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     namespace['math'] = math
     # namespace['_transpose'] = _transpose
 
-    func = eval('lambda x: %s' % estr, namespace)
+    funcstr = 'lambda x: %s' % estr
+    func = eval(funcstr, namespace)
     if use_numba:
         from numba import njit
         func = njit(func)
@@ -250,8 +248,9 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         def wrapper(x):
             arg = np.atleast_1d(np.asanyarray(x, dtype=dtype))
             res = func(arg)
-            print(arg) # DO-NOT-MERGE!
-            print(res) # DO-NOT-MERGE!
+            print('arg = %s' % arg) # DO-NOT-MERGE!
+            print('funcstr = %s' % funcstr)
+            print('res = %s' % res) # DO-NOT-MERGE!
             return res
     else:
         wrapper = func
