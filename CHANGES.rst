@@ -1,3 +1,7 @@
+v0.3.0
+======
+- Lambdify now supports multiple outputs
+
 v0.2.0
 ======
 - linear_rref now handles symbolic entries in the augmented part.

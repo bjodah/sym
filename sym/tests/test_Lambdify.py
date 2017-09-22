@@ -21,7 +21,7 @@ try:
 except:
     SYME_ORDER_SKIP = ('symengine', 'sympysymengine')
 else:
-    SYME_ORDER = ()
+    SYME_ORDER_SKIP = ()
 
 
 @pytest.mark.parametrize('key', Backend.backends.keys())
