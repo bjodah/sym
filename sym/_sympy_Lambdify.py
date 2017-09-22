@@ -66,11 +66,6 @@ class _Lambdify(object):
         except TypeError:
             inp = np.fromiter(inp, dtype=self.numpy_dtype)
 
-        if self.real:
-            real_inp = np.ascontiguousarray(inp.ravel(order=self.order))
-        else:
-            cmplx_inp = np.ascontiguousarray(inp.ravel(order=self.order))
-
         if inp.size < self.args_size or inp.size % self.args_size != 0:
             raise ValueError("Broadcasting failed (input/arg size mismatch)")
         nbroadcast = inp.size // self.args_size
@@ -126,8 +121,9 @@ class _Lambdify(object):
                 raise ValueError("Output argument needs to be writeable")
             out = out.ravel(order=self.order)
 
+        inp = np.ascontiguousarray(inp.ravel(order=self.order))
         res_exprs = self._callback(inp if nbroadcast == 1 else inp.reshape(
-            (nbroadcast, inp.size//nbroadcast) if self.order == 'C' else (inp.size//nbroadcast, nbroadcast)
+            (nbroadcast, inp.size//nbroadcast) # if self.order == 'C' else (inp.size//nbroadcast, nbroadcast)
         ))
         assert len(res_exprs) == self.tot_out_size
         for idx, res in enumerate(res_exprs):
@@ -218,7 +214,7 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
 
     mod = __import__(backend)
     #x = mod.IndexedBase('x')
-    ordering = '..., %d' if order == 'C' else '%d, ...'
+    ordering = '..., %d' # if order == 'C' else '%d, ...'
     indices = [mod.Symbol(ordering % i) for i in range(len(args))]
     dummy_subs = dict(zip(args, [mod.Symbol('x[%s]' % i) for i in indices]))
     dummified = [expr.xreplace(dummy_subs) for expr in flat_exprs]
