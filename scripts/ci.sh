@@ -18,14 +18,16 @@ conda create -q -n test3 python=3.5 notebook sympy pysym symcxx pip pytest pytes
 source activate test3
 python setup.py install
 python -m pip install diofant
-# (cd /; python -m pytest --pyargs $1)
 PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html
 ./scripts/coverage_badge.py htmlcov/ htmlcov/coverage.svg
+
+python -m pip install git+https://github.com/sympy/sympy@master
+PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html
+
 
 
 ! grep "DO-NOT-MERGE!" -R . --exclude ci.sh
 
 python3 -m pip install --user .[all]
-./scripts/render_examples.sh
-python3 -m pip install --user --force-reinstall docutils==0.12  # see https://github.com/sphinx-doc/sphinx/pull/3217
+PYTHONPATH=$(pwd) ./scripts/render_examples.sh
 ./scripts/generate_docs.sh

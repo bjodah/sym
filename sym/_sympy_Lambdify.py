@@ -1,72 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function)
 
+import math
 import os
-import array
 from functools import reduce
-from itertools import product
 from operator import mul
 
-# Note that this is a reimplementation of symengine.Lambdify
-
-
-def _size(n):
-    try:
-        return n.size
-    except AttributeError:
-        return len(n)  # e.g. array.array
-
-
-def _get_shape_nested(ndarr):
-    # no checking of shape consistency is done
-    if isinstance(ndarr, (list, tuple)):
-        return (len(ndarr),) + _get_shape_nested(ndarr[0])
-    else:
-        try:
-            return (len(ndarr),)
-        except TypeError:
-            return ()
-
-
-def _get_shape(ndarr):
-    try:
-        return ndarr.shape
-    except AttributeError:
-        return _get_shape_nested(ndarr)
-
-
-def _nested_getitem(ndarr, indices):
-    if len(indices) == 0:
-        return ndarr
-    else:
-        return _nested_getitem(ndarr[indices[0]], indices[1:])
-
-
-def _all_indices_from_shape(shape):
-    return product(*(range(dim) for dim in shape))
-
-
-def _ravel_nested(ndarr):
-    return [_nested_getitem(ndarr, indices) for indices in
-            _all_indices_from_shape(_get_shape(ndarr))]
-
-
-def _ravel(ndarr):
-    try:
-        return ndarr.ravel()
-    except AttributeError:
-        return _ravel_nested(ndarr)
-
-
-def _flatten(mat, backend):
-    if isinstance(mat, backend.MatrixBase):
-        _mat = []
-        for ri in range(mat.shape[0]):
-            for ci in range(mat.shape[1]):
-                _mat.append(mat[ri, ci])
-        return _mat  # flattened
-    else:
-        return _ravel(mat)
+import numpy as np  # Lambdify requires numpy
 
 
 class _Lambdify(object):
@@ -75,112 +15,163 @@ class _Lambdify(object):
     # If any modifications are to be made, they need to be implemented
     # in symengine.Lambdify *first*, and then reimplemented here.
 
-    def __init__(self, args, exprs, real=True, module='numpy',
-                 use_numba=None, backend='sympy'):
+    def __init__(self, args, *exprs, **kwargs):
+        real = kwargs.pop('real', True)
+        order = kwargs.pop('order', 'C')
+        module = kwargs.pop('module', 'numpy')
+        use_numba = kwargs.pop('use_numba', None)
+        backend = kwargs.pop('backend', 'sympy')
         self._backend = __import__(backend)
-        self.out_shape = _get_shape(exprs)
-        self.args_size = _size(args)
-        self.out_size = reduce(mul, self.out_shape)
-        self.args = _flatten(args, self._backend)
-        self.exprs = [self._backend.sympify(expr)
-                      for expr in _flatten(exprs, self._backend)]
-        if self.out_size != len(self.exprs):
-            raise ValueError("Sanity-check failed: bug in %s" % self.__class__)
+        self.args = np.asanyarray(args)
+        self.args_size = self.args.size
+        self.exprs = tuple(np.asanyarray(expr) for expr in exprs)
+        self.out_shapes = [expr.shape for expr in self.exprs]
+        self.n_exprs = len(self.exprs)
+
+        out_sizes, self.accum_out_sizes = [], []
+        self.tot_out_size = 0
+        for idx, shape in enumerate(self.out_shapes):
+            out_sizes.append(reduce(mul, shape or (1,)))
+            self.tot_out_size += out_sizes[idx]
+        for i in range(self.n_exprs + 1):
+            self.accum_out_sizes.append(0)
+            for j in range(i):
+                self.accum_out_sizes[i] += out_sizes[j]
+
+        args_, outs_ = [], []
+        self.order = order
+        for arg in np.ravel(self.args, order=self.order):
+            args_.append(self._backend.sympify(arg))
+
+        for curr_expr in self.exprs:
+            if curr_expr.ndim == 0:
+                outs_.append(self._backend.sympify(curr_expr.item()))
+            else:
+                for e in np.ravel(curr_expr, order=self.order):
+                    outs_.append(self._backend.sympify(e))
+
         self.real = real
+        self.numpy_dtype = np.float64 if self.real else np.complex128
         if use_numba is None and module == 'numpy':
             _true = ('1', 't', 'true')
             use_numba = os.environ.get('SYM_USE_NUMBA', '0').lower() in _true
         elif use_numba and module != 'numpy':
             raise ValueError("Numba only available when using numpy as module.")
         self.use_numba = use_numba
-        self._callbacks = [callback_factory(self.args, expr, module,
-                                            self.use_numba, backend)
-                           for expr in self.exprs]
+        self._callback = _callback_factory(args_, outs_, module, self.numpy_dtype,
+                                           self.order, self.use_numba, backend)
 
-    def _evaluate_xreplace(self, inp, out, out_offset):
-        for idx in range(self.out_size):
-            subsd = dict(zip(self.args, inp))
-            out[out_offset + idx] = self.exprs[idx].xreplace(subsd)
+    def __call__(self, inp, out=None):
+        try:
+            inp = np.asanyarray(inp, dtype=self.numpy_dtype)
+        except TypeError:
+            inp = np.fromiter(inp, dtype=self.numpy_dtype)
 
-    def __call__(self, inp, out=None, use_numpy=None):
-        if hasattr(inp, 'shape'):
-            inp_shape = inp.shape
-        else:
-            inp = list(inp)
-            inp_shape = _get_shape(inp)
-        inp_size = reduce(mul, inp_shape)
-        if inp_size % self.args_size != 0:
-            raise ValueError("Broadcasting failed")
-        nbroadcast = inp_size // self.args_size
-        if nbroadcast > 1 and self.args_size == 1 and inp_shape[-1] != 1:
-            inp_shape = inp_shape + (1,)  # Implicit reshape
-        new_out_shape = inp_shape[:-1] + self.out_shape
-        new_out_size = nbroadcast * self.out_size
+        if inp.size < self.args_size or inp.size % self.args_size != 0:
+            raise ValueError("Broadcasting failed (input/arg size mismatch)")
+        nbroadcast = inp.size // self.args_size
 
-        if use_numpy is None:
-            try:
-                import numpy as np
-            except ImportError:
-                use_numpy = False  # we will use array.array instead
+        if inp.ndim > 1:
+            if self.args_size > 1:
+                if self.order == 'C':
+                    if inp.shape[inp.ndim-1] != self.args_size:
+                        raise ValueError(("C order implies last dim (%d) == len(args)"
+                                          " (%d)") % (inp.shape[inp.ndim-1], self.args_size))
+                    extra_dim = inp.shape[:inp.ndim-1]
+                elif self.order == 'F':
+                    if inp.shape[0] != self.args_size:
+                        raise ValueError("F order implies first dim (%d) == len(args) (%d)"
+                                         % (inp.shape[0], self.args_size))
+                    extra_dim = inp.shape[1:]
             else:
-                use_numpy = True
-        elif use_numpy is True:
-            import numpy as np
+                extra_dim = inp.shape
+        else:
+            if nbroadcast > 1 and inp.ndim == 1:
+                extra_dim = (nbroadcast,)  # special case
+            else:
+                extra_dim = ()
+        extra_left = extra_dim if self.order == 'C' else ()
+        extra_right = () if self.order == 'C' else extra_dim
+        new_out_shapes = [extra_left + out_shape + extra_right
+                          for out_shape in self.out_shapes]
 
+        new_tot_out_size = nbroadcast * self.tot_out_size
         if out is None:
-            # allocate output container
-            if use_numpy:
-                out = np.empty(new_out_size, dtype=np.float64 if
-                               self.real else np.complex128)
-                reshape_out = len(new_out_shape) > 1
-            else:
-                if self.real:
-                    out = array.array('d', [0]*new_out_size)
-                else:
-                    raise NotImplementedError("Zd unsupported in array.array")
-                reshape_out = False
+            out = np.empty(new_tot_out_size, dtype=self.numpy_dtype, order=self.order)
         else:
-            if use_numpy:
-                if out.dtype != (np.float64 if self.real else np.complex128):
-                    raise TypeError("Output array is of incorrect type")
-                if out.size < new_out_size:
-                    raise ValueError("Incompatible size of output argument")
-                for idx, ln in enumerate(out.shape[-len(self.out_shape)::-1]):
-                    if ln < self.out_shape[-idx]:
-                        raise ValueError("Incompatible shape of output array")
-                if not out.flags['WRITEABLE']:
-                    raise ValueError("Output argument needs to be writeable")
-                if out.ndim > 1:
-                    out = out.ravel()
-                    reshape_out = True
-                else:
-                    # The user passed a 1-dimensional output argument,
-                    # we trust the user to do the right thing.
-                    reshape_out = False
+            if out.size < new_tot_out_size:
+                raise ValueError("Incompatible size of output argument")
+            if out.ndim > 1:
+                if len(self.out_shapes) > 1:
+                    raise ValueError("output array with ndim > 1 assumes one output")
+                out_shape, = self.out_shapes
+                if self.order == 'C':
+                    if not out.flags['C_CONTIGUOUS']:
+                        raise ValueError("Output argument needs to be C-contiguous")
+                    if out.shape[-len(out_shape):] != tuple(out_shape):
+                        raise ValueError("shape mismatch for output array")
+                elif self.order == 'F':
+                    if not out.flags['F_CONTIGUOUS']:
+                        raise ValueError("Output argument needs to be F-contiguous")
+                    if out.shape[:len(out_shape)] != tuple(out_shape):
+                        raise ValueError("shape mismatch for output array")
             else:
-                reshape_out = False
+                if not out.flags['F_CONTIGUOUS']:  # or C_CONTIGUOUS (ndim <= 1)
+                    raise ValueError("Output array need to be contiguous")
+            if not out.flags['WRITEABLE']:
+                raise ValueError("Output argument needs to be writeable")
+            out = out.ravel(order=self.order)
 
-        if use_numpy:
-            if reshape_out:
-                out = out.reshape(new_out_shape)
-            for idx, callback in zip(_all_indices_from_shape(self.out_shape), self._callbacks):
-                out[(Ellipsis,) + idx] = callback(inp)
+        inp = np.ascontiguousarray(inp.ravel(order=self.order))
+        res_exprs = self._callback(inp if nbroadcast == 1 else inp.reshape(
+            (nbroadcast, inp.size//nbroadcast)
+        ))
+        assert len(res_exprs) == self.tot_out_size
+        for idx, res in enumerate(res_exprs):
+            out.flat[idx::self.tot_out_size] = res
+
+        if self.order == 'C':
+            out = out.reshape((nbroadcast, self.tot_out_size), order='C')
+            result = [
+                out[:, self.accum_out_sizes[idx]:self.accum_out_sizes[idx+1]].reshape(
+                    new_out_shapes[idx], order='C') for idx in range(self.n_exprs)
+            ]
+        elif self.order == 'F':
+            out = out.reshape((self.tot_out_size, nbroadcast), order='F')
+            result = [
+                out[self.accum_out_sizes[idx]:self.accum_out_sizes[idx+1], :].reshape(
+                    new_out_shapes[idx], order='F') for idx in range(self.n_exprs)
+            ]
+        if self.n_exprs == 1:
+            return result[0]
         else:
-            flat_inp = _flatten(inp)
-            for idx in range(nbroadcast):
-                out_offset = idx*self.out_size
-                local_inp = flat_inp[idx*self.args_size:(idx+1)*self.args_size]
-                self._evaluate_xreplace(local_inp, out, out_offset)  # slow, consider lambdastr
-
-        if not use_numpy and reshape_out:
-            raise NotImplementedError("array.array lacks shape, use NumPy")
-        return out
+            return result
 
 
-def callback_factory(args, expr, module, use_numba=False, backend='sympy'):
+def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy'):
     if module == 'numpy':
-        TRANSLATIONS = __import__(backend + '.utilities.lambdify',
-                                  fromlist=['NUMPY_TRANSLATIONS']).NUMPY_TRANSLATIONS
+        TRANSLATIONS = {
+            "acos": "arccos",
+            "acosh": "arccosh",
+            "arg": "angle",
+            "asin": "arcsin",
+            "asinh": "arcsinh",
+            "atan": "arctan",
+            "atan2": "arctan2",
+            "atanh": "arctanh",
+            "ceiling": "ceil",
+            "E": "e",
+            "im": "imag",
+            "ln": "log",
+            "Mod": "mod",
+            "oo": "inf",
+            "re": "real",
+            "SparseMatrix": "array",
+            "ImmutableSparseMatrix": "array",
+            "Matrix": "array",
+            "MutableDenseMatrix": "array",
+            "ImmutableDenseMatrix": "array",
+        }
         Printer = __import__(backend + '.printing.lambdarepr',
                              fromlist=['NumPyPrinter']).NumPyPrinter
 
@@ -190,18 +181,43 @@ def callback_factory(args, expr, module, use_numba=False, backend='sympy'):
         lambdarepr = __import__(backend + '.printing.lambdarepr',
                                 fromlist=['lambdarepr']).lambdarepr
         if module == 'mpmath':
-            TRANSLATIONS = __import__(backend + '.utilities.lambdify',
-                                      fromlist=['MPMATH_TRANSLATIONS']).MPMATH_TRANSLATIONS
+            TRANSLATIONS = {
+                "Abs": "fabs",
+                "elliptic_k": "ellipk",
+                "elliptic_f": "ellipf",
+                "elliptic_e": "ellipe",
+                "elliptic_pi": "ellippi",
+                "ceiling": "ceil",
+                "chebyshevt": "chebyt",
+                "chebyshevu": "chebyu",
+                "E": "e",
+                "I": "j",
+                "ln": "log",
+                # "lowergamma":"lower_gamma",
+                "oo": "inf",
+                # "uppergamma":"upper_gamma",
+                "LambertW": "lambertw",
+                "MutableDenseMatrix": "matrix",
+                "ImmutableDenseMatrix": "matrix",
+                "conjugate": "conj",
+                "dirichlet_eta": "altzeta",
+                "Ei": "ei",
+                "Shi": "shi",
+                "Chi": "chi",
+                "Si": "si",
+                "Ci": "ci"
+            }
+
         elif module == 'sympy':
             TRANSLATIONS = {}
         else:
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
     mod = __import__(backend)
-    x = mod.IndexedBase('x')
-    indices = [mod.Symbol('..., %d' % i) for i in range(len(args))]
-    dummy_subs = dict(zip(args, [x[i] for i in indices]))
-    dummified = expr.xreplace(dummy_subs)
+    ordering = '..., %d'  # if order == 'C' else '%d, ...'
+    indices = [mod.Symbol(ordering % i) for i in range(len(args))]
+    dummy_subs = dict(zip(args, [mod.Symbol('x[%s]' % i) for i in indices]))
+    dummified = [expr.xreplace(dummy_subs) for expr in flat_exprs]
     estr = lambdarepr(dummified)
 
     mod = __import__(module)
@@ -215,13 +231,20 @@ def callback_factory(args, expr, module, use_numba=False, backend='sympy'):
     if module != 'mpmath':
         namespace['Abs'] = abs
 
-    func = eval('lambda x: %s' % estr, namespace)
+    namespace['numpy'] = np
+    namespace['math'] = math
+    # namespace['_transpose'] = _transpose
+
+    funcstr = 'lambda x: %s' % estr
+    func = eval(funcstr, namespace)
     if use_numba:
         from numba import njit
         func = njit(func)
     if module == 'numpy':
         def wrapper(x):
-            return func(mod.asarray(x, dtype=mod.float64))
+            arg = np.atleast_1d(np.asanyarray(x, dtype=dtype))
+            res = func(arg)
+            return res
     else:
         wrapper = func
     wrapper.__doc__ = estr

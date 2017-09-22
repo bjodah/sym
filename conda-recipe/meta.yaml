@@ -1,5 +1,5 @@
 {% set name = "sym" %}
-{% set version = "0.2.0.git" %}
+{% set version = "0.3.0.dev0+git" %}
 
 package:
   name: {{ name }}
@@ -38,7 +38,7 @@ test:
 
 about:
   home: https://github.com/bjodah/{{ name }}
-  license: BSD
+  license: BSD 2-Clause
   license_file: LICENSE
   summary: 'Unified wrapper to symbolic manipulation libraries in Python.'
   doc_url: https://bjodah.github.io/{{ name }}/latest

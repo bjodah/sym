@@ -1,5 +1,5 @@
 build:
-  image: bjodah/bjodahimg16dev:latest
+  image: bjodah/bjodahimg16dev:v1.3
   commands:
     - export PATH=/opt/miniconda3/bin:$PATH
     - conda config --add channels bjodah
