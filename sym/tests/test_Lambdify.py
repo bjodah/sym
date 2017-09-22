@@ -94,7 +94,7 @@ def test_broadcast_shapes(key):  # test is from symengine test suite
     assert lmb(np.arange(5*7*6*2).reshape((5, 7, 6, 2))).shape == (5, 7, 6, 3)
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
                                        Backend.backends.keys()))
 def test_broadcast_multiple_extra_dimensions(key):
     se = Backend(key)
@@ -256,7 +256,7 @@ def _test_Lambdify_scalar_vector_matrix(se):
         ])
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
                                        Backend.backends.keys()))
 def test_Lambdify_scalar_vector_matrix(key):
     _test_Lambdify_scalar_vector_matrix(se=Backend(key))
