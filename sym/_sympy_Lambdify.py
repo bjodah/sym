@@ -3,9 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import math
 import os
-import array
 from functools import reduce
-from itertools import product
 from operator import mul
 
 import numpy as np  # Lambdify requires numpy
@@ -62,7 +60,6 @@ class _Lambdify(object):
         self.use_numba = use_numba
         self._callback = _callback_factory(args_, outs_, module, self.numpy_dtype,
                                            self.order, self.use_numba, backend)
-
 
     def __call__(self, inp, out=None):
         try:
@@ -127,7 +124,7 @@ class _Lambdify(object):
 
         inp = np.ascontiguousarray(inp.ravel(order=self.order))
         res_exprs = self._callback(inp if nbroadcast == 1 else inp.reshape(
-            (nbroadcast, inp.size//nbroadcast) # if self.order == 'C' else (inp.size//nbroadcast, nbroadcast)
+            (nbroadcast, inp.size//nbroadcast)
         ))
         assert len(res_exprs) == self.tot_out_size
         for idx, res in enumerate(res_exprs):
@@ -196,9 +193,9 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
                 "E": "e",
                 "I": "j",
                 "ln": "log",
-                #"lowergamma":"lower_gamma",
+                # "lowergamma":"lower_gamma",
                 "oo": "inf",
-                #"uppergamma":"upper_gamma",
+                # "uppergamma":"upper_gamma",
                 "LambertW": "lambertw",
                 "MutableDenseMatrix": "matrix",
                 "ImmutableDenseMatrix": "matrix",
@@ -217,8 +214,7 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
     mod = __import__(backend)
-    #x = mod.IndexedBase('x')
-    ordering = '..., %d' # if order == 'C' else '%d, ...'
+    ordering = '..., %d'  # if order == 'C' else '%d, ...'
     indices = [mod.Symbol(ordering % i) for i in range(len(args))]
     dummy_subs = dict(zip(args, [mod.Symbol('x[%s]' % i) for i in indices]))
     dummified = [expr.xreplace(dummy_subs) for expr in flat_exprs]

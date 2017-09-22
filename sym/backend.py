@@ -43,9 +43,9 @@ class _SymPySymEngine(_SymPy):
 
     def __init__(self):
         self.__sym_backend__ = __import__('sympy')
-        from symengine import Lambdify, symarray
+        from symengine import Lambdify
         self.Lambdify = Lambdify
-        #self.real_symarray = symarray
+
 
 class _Diofant(_SymPy):
 
