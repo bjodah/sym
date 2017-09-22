@@ -17,8 +17,12 @@ class _Lambdify(object):
     # If any modifications are to be made, they need to be implemented
     # in symengine.Lambdify *first*, and then reimplemented here.
 
-    def __init__(self, args, *exprs, real=True, order='C', module='numpy',
-                 use_numba=None, backend='sympy'):
+    def __init__(self, args, *exprs, **kwargs):
+        real = kwargs.pop('real', True)
+        order = kwargs.pop('order', 'C')
+        module = kwargs.pop('module', 'numpy')
+        use_numba = kwargs.pop('use_numba', None)
+        backend = kwargs.pop('backend', 'sympy')
         self._backend = __import__(backend)
         self.args = np.asanyarray(args)
         self.args_size = self.args.size
