@@ -29,5 +29,5 @@ PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html
 ! grep "DO-NOT-MERGE!" -R . --exclude ci.sh
 
 python3 -m pip install --user .[all]
-./scripts/render_examples.sh
+PYTHONPATH=$(pwd) ./scripts/render_examples.sh
 ./scripts/generate_docs.sh
