@@ -14,6 +14,15 @@ from .. import Backend
 # This tests Lambdify (see SymEngine), it offers essentially the same
 # functionality as SymPy's lambdify but works for arbitrarily long input
 
+be = Backend('symengine')
+x = be.Symbol('x')
+try:
+    be.Lambdify([x], [x**2], order='F')
+except:
+    SYME_ORDER_SKIP = ('symengine', 'sympysymengine')
+else:
+    SYME_ORDER = ()
+
 
 @pytest.mark.parametrize('key', Backend.backends.keys())
 def test_Lambdify_single_arg(key):
@@ -253,7 +262,7 @@ def test_Lambdify_scalar_vector_matrix(key):
     _test_Lambdify_scalar_vector_matrix(se=Backend(key))
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
                                        Backend.backends.keys()))
 def test_Lambdify_gh174(key):
     # Tests array broadcasting if the expressions form an N-dimensional array
@@ -360,7 +369,7 @@ def _get_Ndim_args_exprs_funcs(order, se):
         nd_exprs_b[index] = f_b(index, x, y)
     return args, nd_exprs_a, nd_exprs_b, f_a, f_b
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
                                        Backend.backends.keys()))
 def test_Lambdify_Ndimensional_order_C(key):
     se = Backend(key)
@@ -385,7 +394,7 @@ def test_Lambdify_Ndimensional_order_C(key):
             assert np.isclose(out4b[(b, c, d) + index], f_b(index, _x, _y))
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
                                        Backend.backends.keys()))
 def test_Lambdify_Ndimensional_order_F(key):
     se = Backend(key)
@@ -410,7 +419,7 @@ def test_Lambdify_Ndimensional_order_F(key):
             assert np.isclose(out4b[index + (b, c, d)], f_b(index, _x, _y))
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
                                        Backend.backends.keys()))
 def test_Lambdify_inp_exceptions(key):
     se = Backend(key)
