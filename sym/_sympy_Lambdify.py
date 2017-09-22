@@ -248,9 +248,6 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         def wrapper(x):
             arg = np.atleast_1d(np.asanyarray(x, dtype=dtype))
             res = func(arg)
-            print('arg = %s' % arg) # DO-NOT-MERGE!
-            print('funcstr = %s' % funcstr)
-            print('res = %s' % res) # DO-NOT-MERGE!
             return res
     else:
         wrapper = func

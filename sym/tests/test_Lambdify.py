@@ -222,7 +222,6 @@ def test_Lambdify_heterogeneous_output(key):
     _Lambdify_heterogeneous_output(se=Backend(key))
 
 
-
 def _test_Lambdify_scalar_vector_matrix(se):
     args = x, y = se.symbols('x y')
     vec = se.DenseMatrix([x+y, x*y])
@@ -271,7 +270,6 @@ def test_Lambdify_gh174(key):
     # (n, o, p, q), then the returned array will be of shape (k, l, m, o, p, q)
     se = Backend(key)
     args = x, y = se.symbols('x y')
-    nargs = len(args)
     vec1 = se.DenseMatrix([x, x**2, x**3])
     assert vec1.shape == (3, 1)
     assert np.asarray(vec1).shape == (3, 1)
@@ -344,8 +342,8 @@ def test_Lambdify_gh174(key):
         assert out3f[0][idx] == _x*_y
         assert np.all(out3c[1][idx, ...] == _mtx3(_x, _y))
         assert np.all(out3f[1][..., idx] == _mtx3(_x, _y))
-        assert np.all(out3c[2][idx, ...] == [[_x],[_x**2],[_x**3]])
-        assert np.all(out3f[2][..., idx] == [[_x],[_x**2],[_x**3]])
+        assert np.all(out3c[2][idx, ...] == [[_x], [_x**2], [_x**3]])
+        assert np.all(out3f[2][..., idx] == [[_x], [_x**2], [_x**3]])
 
 
 def _get_Ndim_args_exprs_funcs(order, se):
@@ -368,6 +366,7 @@ def _get_Ndim_args_exprs_funcs(order, se):
     for index in np.ndindex(*nd_exprs_b.shape):
         nd_exprs_b[index] = f_b(index, x, y)
     return args, nd_exprs_a, nd_exprs_b, f_a, f_b
+
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
                                        Backend.backends.keys()))
