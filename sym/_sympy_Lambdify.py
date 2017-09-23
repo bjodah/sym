@@ -238,8 +238,8 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     funcstr = 'lambda x: %s' % estr
     func = eval(funcstr, namespace)
     if use_numba:
-        from numba import njit
-        func = njit(func)
+        from numba import jit
+        func = jit(func)
     if module == 'numpy':
         def wrapper(x):
             arg = np.atleast_1d(np.asanyarray(x, dtype=dtype))
