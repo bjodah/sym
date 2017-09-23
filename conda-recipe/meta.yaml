@@ -34,7 +34,7 @@ test:
     - pysym
 
   commands:
-    - py.test --pyargs {{ name }}
+    - py.test -k 'not diofant' --pyargs {{ name }}
 
 about:
   home: https://github.com/bjodah/{{ name }}
