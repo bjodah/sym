@@ -51,21 +51,21 @@ class _Lambdify(object):
                     outs_.append(self._backend.sympify(e))
 
         self.real = real
-        self.numpy_dtype = np.float64 if self.real else np.complex128
+        self.dtype = kwargs.pop('dtype', np.float64 if self.real else np.complex128)
         if use_numba is None and module == 'numpy':
             _true = ('1', 't', 'true')
             use_numba = os.environ.get('SYM_USE_NUMBA', '0').lower() in _true
         elif use_numba and module != 'numpy':
             raise ValueError("Numba only available when using numpy as module.")
         self.use_numba = use_numba
-        self._callback = _callback_factory(args_, outs_, module, self.numpy_dtype,
+        self._callback = _callback_factory(args_, outs_, module, self.dtype,
                                            self.order, self.use_numba, backend)
 
     def __call__(self, inp, out=None):
         try:
-            inp = np.asanyarray(inp, dtype=self.numpy_dtype)
+            inp = np.asanyarray(inp, dtype=self.dtype)
         except TypeError:
-            inp = np.fromiter(inp, dtype=self.numpy_dtype)
+            inp = np.fromiter(inp, dtype=self.dtype)
 
         if inp.size < self.args_size or inp.size % self.args_size != 0:
             raise ValueError("Broadcasting failed (input/arg size mismatch)")
@@ -97,7 +97,7 @@ class _Lambdify(object):
 
         new_tot_out_size = nbroadcast * self.tot_out_size
         if out is None:
-            out = np.empty(new_tot_out_size, dtype=self.numpy_dtype, order=self.order)
+            out = np.empty(new_tot_out_size, dtype=self.dtype, order=self.order)
         else:
             if out.size < new_tot_out_size:
                 raise ValueError("Incompatible size of output argument")
