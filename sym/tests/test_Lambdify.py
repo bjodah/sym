@@ -14,17 +14,22 @@ from .. import Backend
 # This tests Lambdify (see SymEngine), it offers essentially the same
 # functionality as SymPy's lambdify but works for arbitrarily long input
 
-be = Backend('symengine')
-x = be.Symbol('x')
-try:
-    be.Lambdify([x], [x**2], order='F')
-except:
-    SYME_ORDER_SKIP = ('symengine', 'sympysymengine')
-else:
-    SYME_ORDER_SKIP = ()
+backends = []
+for bk in Backend.backends.keys():
+    try:
+        _be = Backend(bk)
+    except ImportError:
+        continue
 
+    _x = _be.Symbol('x')
+    try:
+        _be.Lambdify([_x], [_x**2], order='F')  # new signature in symengine 0.4 (?)
+    except:
+        continue
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+    backends.append(bk)
+
+@pytest.mark.parametrize('key', backends)
 def test_Lambdify_single_arg(key):
     be = Backend(key)
     x = be.Symbol('x')
@@ -32,7 +37,7 @@ def test_Lambdify_single_arg(key):
     assert np.allclose([4], lmb([2.0]))
 
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+@pytest.mark.parametrize('key', backends)
 def test_Lambdify_Abs(key):
     if key == 'symengine':
         return  # currently no Abs in symengine.py
@@ -43,7 +48,7 @@ def test_Lambdify_Abs(key):
     assert np.allclose([2], lmb([-2.0]))
 
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+@pytest.mark.parametrize('key', backends)
 def test_Lambdify_matrix(key):
     be = Backend(key)
     x, y = arr = be.symarray('x', 2)
@@ -54,7 +59,7 @@ def test_Lambdify_matrix(key):
     assert np.allclose(result, [[3, 6], [90, 3]])
 
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+@pytest.mark.parametrize('key', backends)
 def test_Lambdify_jacobian(key):
     be = Backend(key)
     x = be.Symbol('x')
@@ -69,7 +74,7 @@ def test_Lambdify_jacobian(key):
 
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
-                                       Backend.backends.keys()))
+                                       backends))
 def test_broadcast(key):  # test is from symengine test suite
     be = Backend(key)
     a = np.linspace(-np.pi, np.pi)
@@ -83,7 +88,7 @@ def test_broadcast(key):  # test is from symengine test suite
 
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
-                                       Backend.backends.keys()))
+                                       backends))
 def test_broadcast_shapes(key):  # test is from symengine test suite
     be = Backend(key)
     x, y = be.symbols('x y')
@@ -94,8 +99,8 @@ def test_broadcast_shapes(key):  # test is from symengine test suite
     assert lmb(np.arange(5*7*6*2).reshape((5, 7, 6, 2))).shape == (5, 7, 6, 3)
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
-                                       Backend.backends.keys()))
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+                                       backends))
 def test_broadcast_multiple_extra_dimensions(key):
     se = Backend(key)
     inp = np.arange(12.).reshape((4, 3, 1))
@@ -112,7 +117,7 @@ def test_broadcast_multiple_extra_dimensions(key):
 
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
-                                       Backend.backends.keys()))
+                                       backends))
 def test_more_than_255_args(key):
     # SymPy's lambdify can handle at most 255 arguments
     # this is a proof of concept that this limitation does
@@ -135,7 +140,7 @@ def test_more_than_255_args(key):
         assert np.allclose(out, ref)
 
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+@pytest.mark.parametrize('key', backends)
 def test_Lambdify(key):
     se = Backend(key)
     n = 7
@@ -160,7 +165,7 @@ def _get_2_to_2by2_numpy(se):
     return l, check
 
 
-@pytest.mark.parametrize('key', Backend.backends.keys())
+@pytest.mark.parametrize('key', backends)
 def test_Lambdify_2dim_numpy(key):
     se = Backend(key)
     lmb, check = _get_2_to_2by2_numpy(se)
@@ -171,7 +176,7 @@ def test_Lambdify_2dim_numpy(key):
 
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym',),
-                                       Backend.backends.keys()))
+                                       backends))
 def test_Lambdify_invalid_args(key):
     se = Backend(key)
     x = se.Symbol('x')
@@ -195,6 +200,9 @@ def test_Lambdify_mpamath_mpf():
     p = np.concatenate((p0, p1))
     lmb(p)
 
+    lmb2 = be.Lambdify([x], [1-x], module='mpmath', dtype=object)
+    assert 9e-21 < (1 - lmb2(mpf('1e-20'))) < 11e-21
+
 
 def _Lambdify_heterogeneous_output(se):
     x, y = se.symbols('x, y')
@@ -217,7 +225,7 @@ def _Lambdify_heterogeneous_output(se):
 
 
 @pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
-                                       Backend.backends.keys()))
+                                       backends))
 def test_Lambdify_heterogeneous_output(key):
     _Lambdify_heterogeneous_output(se=Backend(key))
 
@@ -255,14 +263,14 @@ def _test_Lambdify_scalar_vector_matrix(se):
         ])
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
-                                       Backend.backends.keys()))
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+                                       backends))
 def test_Lambdify_scalar_vector_matrix(key):
     _test_Lambdify_scalar_vector_matrix(se=Backend(key))
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
-                                       Backend.backends.keys()))
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+                                       backends))
 def test_Lambdify_gh174(key):
     # Tests array broadcasting if the expressions form an N-dimensional array
     # of say shape (k, l, m) and it contains 'n' arguments (x1, ... xn), then
@@ -368,8 +376,8 @@ def _get_Ndim_args_exprs_funcs(order, se):
     return args, nd_exprs_a, nd_exprs_b, f_a, f_b
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
-                                       Backend.backends.keys()))
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+                                       backends))
 def test_Lambdify_Ndimensional_order_C(key):
     se = Backend(key)
     args, nd_exprs_a, nd_exprs_b, f_a, f_b = _get_Ndim_args_exprs_funcs(order='C', se=se)
@@ -393,8 +401,8 @@ def test_Lambdify_Ndimensional_order_C(key):
             assert np.isclose(out4b[(b, c, d) + index], f_b(index, _x, _y))
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
-                                       Backend.backends.keys()))
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+                                       backends))
 def test_Lambdify_Ndimensional_order_F(key):
     se = Backend(key)
     args, nd_exprs_a, nd_exprs_b, f_a, f_b = _get_Ndim_args_exprs_funcs(order='F', se=se)
@@ -418,8 +426,8 @@ def test_Lambdify_Ndimensional_order_F(key):
             assert np.isclose(out4b[index + (b, c, d)], f_b(index, _x, _y))
 
 
-@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx') + SYME_ORDER_SKIP,
-                                       Backend.backends.keys()))
+@pytest.mark.parametrize('key', filter(lambda k: k not in ('pysym', 'symcxx'),
+                                       backends))
 def test_Lambdify_inp_exceptions(key):
     se = Backend(key)
     args = x, y = se.symbols('x y')
