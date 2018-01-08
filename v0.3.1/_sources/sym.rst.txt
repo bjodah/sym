@@ -1,0 +1,28 @@
+sym package
+===========
+
+.. automodule:: sym
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+sym\.backend module
+-------------------
+
+.. automodule:: sym.backend
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sym\.util module
+----------------
+
+.. automodule:: sym.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
