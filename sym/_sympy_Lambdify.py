@@ -148,6 +148,12 @@ class _Lambdify(object):
             return result
 
 
+def mk_func(v):
+    def prnt(self, e):
+        return '%s(%s)' % (v, ', '.join(self._print(a) for a in e.args))
+    return prnt
+
+
 def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy'):
     if module == 'numpy':
         TRANSLATIONS = {
@@ -171,12 +177,21 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
             "Matrix": "array",
             "MutableDenseMatrix": "array",
             "ImmutableDenseMatrix": "array",
+            "__NONEXISTANT__": "inf"
         }
-        Printer = __import__(backend + '.printing.lambdarepr',
-                             fromlist=['NumPyPrinter']).NumPyPrinter
+        NumPyPrinter = __import__(backend + '.printing.lambdarepr',
+                                  fromlist=['NumPyPrinter']).NumPyPrinter
+
+        class MyPrinter(NumPyPrinter):
+            pass
+
+        for k, v in TRANSLATIONS.items():
+            setattr(MyPrinter, '_print_%s' % k, mk_func(v))
+
+        p = MyPrinter()
 
         def lambdarepr(_x):
-            return Printer().doprint(_x)
+            return p.doprint(_x)
     else:
         lambdarepr = __import__(backend + '.printing.lambdarepr',
                                 fromlist=['lambdarepr']).lambdarepr
@@ -223,8 +238,7 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     mod = __import__(module)
     namespace = mod.__dict__.copy()
 
-    # e.g. NumPyPrinter incomplete: https://github.com/sympy/sympy/issues/11023
-    # we need to read translations from lambdify
+    # NumPyPrinter incomplete: https://github.com/sympy/sympy/issues/11023
     for k, v in TRANSLATIONS.items():
         namespace[k] = namespace[v]
 
@@ -235,8 +249,7 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     namespace['math'] = math
     # namespace['_transpose'] = _transpose
 
-    funcstr = 'lambda x: %s' % estr
-    func = eval(funcstr, namespace)
+    func = eval('lambda x: %s' % estr, namespace)
     if use_numba:
         from numba import jit
         func = jit(func)
@@ -248,5 +261,4 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     else:
         wrapper = func
     wrapper.__doc__ = estr
-
     return wrapper
