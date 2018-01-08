@@ -5,7 +5,7 @@ if [[ "$CI_BRANCH" =~ ^v[0-9]+.[0-9]?* ]]; then
 fi
 
 # Py2
-conda create -q -n test2 python=2.7 sympy pysym symcxx pip pytest python-symengine
+conda create -q -n test2 python=2.7 sympy pysym symcxx pip pytest python-symengine numba
 source activate test2
 python2 setup.py sdist
 ORIPATH=$(pwd)
@@ -14,7 +14,7 @@ ORIPATH=$(pwd)
 source deactivate
 
 # Py3
-conda create -q -n test3 python=3.5 notebook sympy pysym symcxx pip pytest pytest-cov pytest-flakes pytest-pep8 python-symengine
+conda create -q -n test3 python=3.5 notebook sympy pysym symcxx pip pytest pytest-cov pytest-flakes pytest-pep8 python-symengine numba
 source activate test3
 python setup.py install
 python -m pip install diofant
