@@ -177,7 +177,8 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
             "Matrix": "array",
             "MutableDenseMatrix": "array",
             "ImmutableDenseMatrix": "array",
-            "__NONEXISTANT__": "inf"
+            "__NONEXISTANT__": "inf",
+            "sign": "sign",
         }
         NumPyPrinter = __import__(backend + '.printing.lambdarepr',
                                   fromlist=['NumPyPrinter']).NumPyPrinter
@@ -220,7 +221,8 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
                 "Shi": "shi",
                 "Chi": "chi",
                 "Si": "si",
-                "Ci": "ci"
+                "Ci": "ci",
+                "sign": "sign",
             }
 
         elif module == 'sympy':
