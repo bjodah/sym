@@ -1,3 +1,7 @@
+v0.3.2
+======
+- Lambdify now supports ``sign``
+
 v0.3.0
 ======
 - Lambdify now supports multiple outputs
