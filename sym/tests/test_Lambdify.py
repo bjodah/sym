@@ -40,7 +40,7 @@ def test_Lambdify_single_arg(key):
 
 @pytest.mark.parametrize('key', backends)
 def test_Lambdify_Abs(key):
-    if key == 'symengine': # currently no Abs in symengine.py
+    if key == 'symengine':  # currently no Abs in symengine.py
         return  # (see https://github.com/symengine/symengine.py/commit/699d49ef09e2f5262381ae971f723ea4a284f0de)
 
     be = Backend(key)
@@ -51,7 +51,7 @@ def test_Lambdify_Abs(key):
 
 @pytest.mark.parametrize('key', backends)
 def test_Lambdify_sign(key):
-    if key.endswith('symengine'): # currently no sign in symengine.py
+    if key.endswith('symengine'):  # currently no sign in symengine.py
         return  # (see https://github.com/symengine/symengine.py/commit/699d49ef09e2f5262381ae971f723ea4a284f0de)
 
     be = Backend(key)

@@ -251,7 +251,6 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     namespace['math'] = math
     # namespace['_transpose'] = _transpose
 
-    print(estr)
     func = eval('lambda x: %s' % estr, namespace)
     if use_numba:
         from numba import jit
