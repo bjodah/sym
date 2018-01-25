@@ -20,7 +20,7 @@ sym
    :alt: coverage
 
 
-`sym <https://github.com/bjodah/sym>`_ provides a unified wrapper to some
+``sym`` provides a unified wrapper to some
 symbolic manipulation libraries in Python. It makes it easy for library authors
 to test their packages against several symbolic manipulation libraries.
 
