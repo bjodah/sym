@@ -3,6 +3,12 @@ sym
 .. image:: http://hera.physchem.kth.se:9090/api/badges/bjodah/sym/status.svg
    :target: http://hera.physchem.kth.se:9090/bjodah/sym
    :alt: Build status
+.. image:: https://circleci.com/gh/bjodah/sym.svg?style=svg
+   :target: https://circleci.com/gh/bjodah/sym
+   :alt: Build status on CircleCI
+.. image:: https://secure.travis-ci.org/bjodah/sym.svg?branch=master
+   :target: http://travis-ci.org/bjodah/sym
+   :alt: Build status on Travis-CI
 .. image:: https://img.shields.io/pypi/v/sym.svg
    :target: https://pypi.python.org/pypi/sym
    :alt: PyPI version
