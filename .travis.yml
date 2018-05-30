@@ -28,13 +28,14 @@ install:
       conda config --set always_yes yes
       conda update python
       conda install conda-build
-      conda install conda-build
       conda config --remove channels defaults
       conda config --add channels defaults
       conda config --add channels conda-forge
       conda config --set show_channel_urls true
 
 script:
+    - sed -i.bak0 '/pysym/d' conda-recipe/meta.yaml
+    - sed -i.bak1 '/symcxx/d' conda-recipe/meta.yaml
     - conda build conda-recipe
 
 notifications:
