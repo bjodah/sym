@@ -105,6 +105,14 @@ class _SymCXX(_Base):
     DenseMatrix = _DenseMatrix
 
 
+class _NumPy(_Base):
+
+    def __init__(self):
+        self.__sym_backend__ = __import__('numpy')
+        for k in ('cos', 'sin', 'tan', 'cosh', 'sinh', 'tanh', 'tan2'):
+            setattr(self, 'a'+k, getattr(self.__sym_backend__, 'arc'+k))
+
+
 def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
     """ Backend for the underlying symbolic manipulation packages
 
@@ -145,6 +153,7 @@ Backend.backends = {
     'sympysymengine': _SymPySymEngine,  # uses selected parts from SymEngine to augment SymPy
     'pysym': _PySym,
     'symcxx': _SymCXX,
+    'numpy': _NumPy,
 }
 
 if sys.version_info[0] > 2:
