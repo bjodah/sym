@@ -30,4 +30,6 @@ install:
 build: off
 
 test_script:
+    - "sed -i '/pysym/d' conda-recipe/meta.yaml"
+    - "sed -i '/symcxx/d' conda-recipe/meta.yaml"
     - conda.exe build conda-recipe --quiet
