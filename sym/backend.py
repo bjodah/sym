@@ -75,7 +75,7 @@ class _SymEngine(_Base):
         # this will allow backend use with older symengine versions,
         # failing gracefully only if cse is invoked
         self._cse = getattr(self.__sym_backend__, 'cse', None)
-        self._ccode = self.__sym_backend__.lib.symengine_wrapper.ccode
+        self._ccode = getattr(self.__sym_backend__.lib.symengine_wrapper, 'ccode', None)
 
     def Matrix(self, *args, **kwargs):
         return self.DenseMatrix(*args, **kwargs)
