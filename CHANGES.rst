@@ -1,3 +1,7 @@
+v0.3.3
+======
+- Backend now support ``cse`` & ``ccode`` for symengine
+
 v0.3.2
 ======
 - Lambdify now supports ``sign``
