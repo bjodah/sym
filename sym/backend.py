@@ -168,7 +168,7 @@ def Backend(name=None, envvar='SYM_BACKEND', default='sympy'):
     >>> exprs = [x + y + 1, x*y**2]
     >>> lmb = be.Lambdify([x, y], exprs)
     >>> import numpy as np
-    >>> lmb(np.arange(6.0).reshape((3, 2)))
+    >>> lmb(np.arange(6.0).reshape((3, 2)))  # doctest: +NORMALIZE_WHITESPACE
     array([[   2.,    0.],
            [   6.,   18.],
            [  10.,  100.]])
