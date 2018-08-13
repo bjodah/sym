@@ -23,15 +23,11 @@ sed -i -E \
     -e "s/git_url:(.+)/fn: \{\{ name \}\}-\{\{ version \}\}.tar.gz\n  url: https:\/\/pypi.io\/packages\/source\/\{\{ name\[0\] \}\}\/\{\{ name \}\}\/\{\{ name \}\}-\{\{ version \}\}.tar.gz\n  sha256: \{\{ sha256 \}\}/" \
     dist/conda-recipe-$VERSION/meta.yaml
 
-if [[ -e ./scripts/update-gh-pages.sh ]]; then
-    ./scripts/update-gh-pages.sh v$VERSION
-fi
+ssh $PKG@$SERVER 'mkdir -p ~/public_html/conda-packages; mkdir -p ~/public_html/conda-recipes'
 
-# Specific for this project:
+# https://github.com/bjodah/anfilte
+anfilte-build . dist/conda-recipe-$VERSION dist/
+scp dist/noarch/${PKG}-${VERSION}*.bz2 $PKG@$SERVER:~/public_html/conda-packages/
 scp -r dist/conda-recipe-$VERSION/ $PKG@$SERVER:~/public_html/conda-recipes/
 scp "$SDIST_FILE" "$PKG@$SERVER:~/public_html/releases/"
-for CONDA_PY in 2.7 3.5 3.6; do
-    for CONDA_NPY in 1.11; do
-        ssh $PKG@$SERVER "source /etc/profile; conda-build --python $CONDA_PY --numpy $CONDA_NPY ~/public_html/conda-recipes/conda-recipe-$VERSION/"
-    done
-done
+./scripts/update-gh-pages.sh v$VERSION
