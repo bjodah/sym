@@ -37,6 +37,78 @@ def banded_jacobian(y, x, ml, mu):
     return packed
 
 
+def _contains(expr, x):
+
+    try:
+        return x in expr.free_symbols
+    except AttributeError:
+        return expr.has(x)
+
+
+def sparse_jacobian_csc(y, x):
+    """ Calculates a compressed sparse column (CSC)
+        version of the jacobian
+
+    Parameters
+    ----------
+    y: array_like of expressions
+    x: array_like of symbols
+
+    Returns
+    -------
+    jac_exprs: flattened list of expressions for nonzero entries of dy/dx in column-major order
+    colptrs: list of length ``len(y) + 1``, where ``jac_exprs[colptrs[i]:colptrs[i+1]]`` are
+             the nonzero entries of column ``i`` in ``dy/dx``
+    rowvals: list of length ``len(jac_exprs``, denoting the row index in ``dy/dx`` for each
+             entry in ``jac_exprs``
+    """
+    jac_exprs = []
+    colptrs = []
+    rowvals = []
+    for j, xj in enumerate(x):
+        colptrs.append(len(rowvals))
+        for i, yi in enumerate(y):
+            if not _contains(yi, xj):
+                continue
+            jac_exprs.append(yi.diff(xj))
+            rowvals.append(i)
+    colptrs.append(len(rowvals))
+
+    return jac_exprs, colptrs, rowvals
+
+
+def sparse_jacobian_csr(y, x):
+    """ Calculates a compressed sparse row (CSR)
+        version of the jacobian
+
+    Parameters
+    ----------
+    y: array_like of expressions
+    x: array_like of symbols
+
+    Returns
+    -------
+    jac_exprs: flattened list of expressions for nonzero entries of dy/dx in row-major order
+    rowptrs: list of length ``len(y) + 1``, where ``jac_exprs[colptrs[i]:colptrs[i+1]]`` are
+             the nonzero entries of row ``i`` in ``dy/dx``
+    colvals: list of length ``len(jac_exprs``, denoting the column index in ``dy/dx`` for each
+             entry in ``jac_exprs``
+    """
+    jac_exprs = []
+    rowptrs = []
+    colvals = []
+    for i, yi in enumerate(y):
+        rowptrs.append(len(colvals))
+        for j, xj in enumerate(x):
+            if not _contains(yi, xj):
+                continue
+            jac_exprs.append(yi.diff(xj))
+            colvals.append(j)
+    rowptrs.append(len(colvals))
+
+    return jac_exprs, rowptrs, colvals
+
+
 def check_transforms(fw, bw, symbs):
     """ Verify validity of a pair of forward and backward transformations
 
