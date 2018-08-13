@@ -30,17 +30,21 @@ class _Base(object):
         """ Wraps Matrix/ndarray around results of .util.sparse_jacobian_csc """
         jac_exprs, colptrs, rowvals = sparse_jacobian_csc(exprs, dep)
         nnz = len(jac_exprs)
-        return self.Matrix(1, nnz, jac_exprs),\
-               np.asarray(colptrs, dtype=int),\
-               np.asarray(rowvals, dtype=int)
+        return (
+            self.Matrix(1, nnz, jac_exprs),
+            np.asarray(colptrs, dtype=int),
+            np.asarray(rowvals, dtype=int)
+        )
 
     def sparse_jacobian_csr(self, exprs, dep):
         """ Wraps Matrix/ndarray around results of .util.sparse_jacobian_csr """
         jac_exprs, rowptrs, colvals = sparse_jacobian_csr(exprs, dep)
         nnz = len(jac_exprs)
-        return self.Matrix(1, nnz, jac_exprs),\
-               np.asarray(rowptrs, dtype=int),\
-               np.asarray(colvals, dtype=int)
+        return (
+            self.Matrix(1, nnz, jac_exprs),
+            np.asarray(rowptrs, dtype=int),
+            np.asarray(colvals, dtype=int)
+        )
 
 
 class _SymPy(_Base):

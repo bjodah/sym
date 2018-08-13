@@ -1,3 +1,9 @@
+v0.3.4
+======
+- DenseMatrix got 2 new methods:
+  - sparse_jacobian_csc
+  - sparse_jacobian_csr
+
 v0.3.3
 ======
 - Backend now support ``cse`` & ``ccode`` for symengine
