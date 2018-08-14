@@ -37,14 +37,6 @@ def banded_jacobian(y, x, ml, mu):
     return packed
 
 
-def _contains(expr, x):
-
-    try:
-        return x in expr.free_symbols
-    except AttributeError:
-        return expr.has(x)
-
-
 def sparse_jacobian_csc(y, x):
     """ Calculates a compressed sparse column (CSC)
         version of the jacobian
@@ -62,18 +54,22 @@ def sparse_jacobian_csc(y, x):
     rowvals: list of length ``len(jac_exprs``, denoting the row index in ``dy/dx`` for each
              entry in ``jac_exprs``
     """
-    jac_exprs = []
-    colptrs = []
-    rowvals = []
-    for j, xj in enumerate(x):
-        colptrs.append(len(rowvals))
-        for i, yi in enumerate(y):
-            if not _contains(yi, xj):
-                continue
-            jac_exprs.append(yi.diff(xj))
-            rowvals.append(i)
-    colptrs.append(len(rowvals))
+    n = len(x)
+    try:
+        # backends with free_symbols and hashable symbols
+        idx = dict(zip(x, range(n)))
+        cols = [[] for _ in range(n)]
+        fs = [yi.free_symbols for yi in y]
+        for i, fi in enumerate(fs):
+            for j in sorted(list(map(idx.get, fi))):
+                cols[j].append(i)
+    except (AttributeError, TypeError):
+        # backends without free_symbols or with unhashable symbols
+        cols = [[i for i, yi in enumerate(y) if yi.has(xj)] for xj in x]
 
+    rowvals = [i for col in cols for i in col]
+    colptrs = np.cumsum([0] + list(map(len, cols))).astype(int)
+    jac_exprs = [y[i].diff(xj) for j, xj in enumerate(x) for i in cols[j]]
     return jac_exprs, colptrs, rowvals
 
 
@@ -94,18 +90,18 @@ def sparse_jacobian_csr(y, x):
     colvals: list of length ``len(jac_exprs``, denoting the column index in ``dy/dx`` for each
              entry in ``jac_exprs``
     """
-    jac_exprs = []
-    rowptrs = []
-    colvals = []
-    for i, yi in enumerate(y):
-        rowptrs.append(len(colvals))
-        for j, xj in enumerate(x):
-            if not _contains(yi, xj):
-                continue
-            jac_exprs.append(yi.diff(xj))
-            colvals.append(j)
-    rowptrs.append(len(colvals))
+    n = len(x)
+    try:
+        # backends with free_symbols and hashable symbols
+        idx = dict(zip(x, range(n)))
+        rows = [sorted(list(map(idx.get, yi.free_symbols))) for yi in y]
+    except (AttributeError, TypeError):
+        # backends without free_symbols or with unhashable symbols
+        rows = [[j for j, xj in enumerate(x) if yi.has(xj)] for yi in y]
 
+    colvals = [j for row in rows for j in row]
+    rowptrs = np.cumsum([0] + list(map(len, rows))).astype(int)
+    jac_exprs = [yi.diff(x[j]) for i, yi in enumerate(y) for j in rows[i]]
     return jac_exprs, rowptrs, colvals
 
 
