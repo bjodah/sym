@@ -8,14 +8,4 @@ cp -r dist/* htmlcov/ examples/ doc/_build/html/ deploy/public_html/branches/"${
 if bash -c '[[ "$CI_BRANCH" == "master" ]]'; then
     sed -e "s/\$1/public_html\/branches\/${CI_BRANCH}\/html/" -e "s/\$2/bjodah/" -e "s/\$3/${CI_REPO}/" -e 's/$4/gh-pages/' <scripts/dir_to_branch.sh >deploy/script_queue/gh-pages.sh
     chmod +x deploy/script_queue/gh-pages.sh
-    if [ -e benchmarks/ ]; then
-        cat <<EOF>deploy/script_queue/run_benchmark.sh
-source /etc/profile
-cd ~/benchmarks/
-asv run -k -e >asv-run.log
-asv publish>asv-publish.log
-EOF
-        chmod +x deploy/script_queue/run_benchmark.sh
-        cp -r benchmarks/ deploy/
-    fi
 fi
