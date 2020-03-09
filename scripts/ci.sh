@@ -4,8 +4,8 @@ if [[ "$CI_BRANCH" =~ ^v[0-9]+.[0-9]?* ]]; then
 fi
 
 python3 -m pip install --user .[all]
-PYTHONPATH=$(pwd) ./scripts/run_tests.sh
-PYTHONPATH=$(pwd) ./scripts/render_notebooks.sh examples/
+./scripts/run_tests.sh
+./scripts/render_notebooks.sh examples/
 ./scripts/generate_docs.sh
 
 ! grep "DO-NOT-MERGE!" -R . --exclude ci.sh
