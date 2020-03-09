@@ -65,7 +65,7 @@ if not len(long_descr) > 100:
 _author, _author_email = open(_path_under_setup('AUTHORS'), 'rt').readline().split('<')
 
 extras_req = {
-    'symbolic': ['sympy>=1.0', 'pysym', 'symcxx'],  # use conda for symengine
+    'symbolic': ['sympy>=1.0', 'pysym', 'symcxx>=0.1.10'],  # use conda for symengine
     'docs': ['Sphinx', 'sphinx_rtd_theme', 'numpydoc'],
     'testing': ['pytest', 'pytest-cov', 'pytest-flakes', 'pytest-pep8']
 }
