@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-if [[ "$CI_BRANCH" =~ ^v[0-9]+.[0-9]?* ]]; then
+if [[ "$DRONE_BRANCH" =~ ^v[0-9]+.[0-9]?* ]]; then
     eval export ${1^^}_RELEASE_VERSION=\$CI_BRANCH
 fi
 
