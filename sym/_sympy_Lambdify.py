@@ -276,5 +276,4 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     else:
         wrapper = func
     wrapper.__doc__ = "\n    ".join(body) + '\n\n'
-    print(wrapper.__doc__)
     return wrapper
