@@ -7,7 +7,7 @@ from functools import reduce
 from operator import mul
 
 import numpy as np  # Lambdify requires numpy
-
+import warnings
 
 class _Lambdify(object):
     """ See docstring of symengine.Lambdify """
@@ -20,6 +20,7 @@ class _Lambdify(object):
         order = kwargs.pop('order', 'C')
         module = kwargs.pop('module', 'numpy')
         use_numba = kwargs.pop('use_numba', None)
+        cse = kwargs.pop('cse', os.environ.get('SYM_USE_CSE', '0') == '1')
         backend = kwargs.pop('backend', 'sympy')
         self._backend = __import__(backend)
         self.args = np.asanyarray(args)
@@ -59,7 +60,9 @@ class _Lambdify(object):
             raise ValueError("Numba only available when using numpy as module.")
         self.use_numba = use_numba
         self._callback = _callback_factory(args_, outs_, module, self.dtype,
-                                           self.order, self.use_numba, backend)
+                                           self.order, self.use_numba, backend, cse=cse)
+        if kwargs:
+            warnings.warn("unused keywords: %s" % ", ".join(kwargs))
 
     def __call__(self, inp, out=None):
         try:
@@ -154,7 +157,7 @@ def mk_func(v):
     return prnt
 
 
-def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy'):
+def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy', cse=False):
     if module == 'numpy':
         TRANSLATIONS = {
             "acos": "arccos",
@@ -230,13 +233,21 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         else:
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
-    mod = __import__(backend)
     ordering = '..., %d'  # if order == 'C' else '%d, ...'
+    mod = __import__(backend)
     indices = [mod.Symbol(ordering % i) for i in range(len(args))]
     dummy_subs = dict(zip(args, [mod.Symbol('x[%s]' % i) for i in indices]))
     dummified = [expr.xreplace(dummy_subs) for expr in flat_exprs]
-    estr = lambdarepr(dummified)
-
+    body = []
+    if cse is True:
+        cse = mod.cse
+    if cse:
+        cses, dummified = cse(dummified)
+    else:
+        cses = ()
+    for s, e in cses:
+        body.append("{} = {}".format(s, lambdarepr(e)))
+    body += ["return " + lambdarepr(dummified)]
     mod = __import__(module)
     namespace = mod.__dict__.copy()
 
@@ -250,8 +261,10 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     namespace['numpy'] = np
     namespace['math'] = math
     # namespace['_transpose'] = _transpose
-
-    func = eval('lambda x: %s' % estr, namespace)
+    exec("""def _SYM_generated(x):
+    {}
+""".format("\n    ".join(body)), namespace)
+    func = namespace['_SYM_generated']
     if use_numba:
         from numba import jit
         func = jit(func)
@@ -262,5 +275,6 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
             return res
     else:
         wrapper = func
-    wrapper.__doc__ = estr
+    wrapper.__doc__ = "\n    ".join(body) + '\n\n'
+    print(wrapper.__doc__)
     return wrapper
