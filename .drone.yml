@@ -1,6 +1,9 @@
 pipeline:
   build:
     image: bjodah/bjodahimg20dot:2.1.1.2
+    environment:
+      - CC=gcc-10
+      - CXX=g++-10
     commands:
       - SYM_STRICT_TESTING=1 ./scripts/ci.sh sym
       - ./scripts/prepare_deploy.sh
