@@ -4,8 +4,9 @@ pipeline:
     environment:
       - CC=gcc-10
       - CXX=g++-10
+      - SymEngine_DIR=/opt/symengine-46090cf-rel
     commands:
-      - python3 -m pip install --install-option="--symengine-dir=/opt/symengine-46090cf-rel" https://github.com/symengine/symengine.py/archive/6ea7333ff2986524f8ca4bb89e42319e8ec154f1.tar.gz
+      - python3 -m pip install https://github.com/symengine/symengine.py/archive/6ea7333ff2986524f8ca4bb89e42319e8ec154f1.tar.gz
       - SYM_STRICT_TESTING=1 ./scripts/ci.sh sym
       - ./scripts/prepare_deploy.sh
 
