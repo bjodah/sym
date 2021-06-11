@@ -1,10 +1,11 @@
 pipeline:
   build:
-    image: bjodah/bjodahimg20dev:v1.2.3
+    image: bjodah/bjodahimg20dot:2.1.1.2
     environment:
       - CC=gcc-10
       - CXX=g++-10
     commands:
+      - python3 -m pip install --install-option="--symengine-dir=/opt/symengine-46090cf-rel" https://github.com/symengine/symengine.py/archive/ea1b77180336db2d3bd36caf5c1022ca8ec08250.tar.gz
       - SYM_STRICT_TESTING=1 ./scripts/ci.sh sym
       - ./scripts/prepare_deploy.sh
 
