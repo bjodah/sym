@@ -1,3 +1,8 @@
+v0.3.5
+======
+- Lambdify accepts kwarg 'cse'
+- Updates to interface to e.g. symengine.py
+
 v0.3.4
 ======
 - DenseMatrix got 2 new methods:
