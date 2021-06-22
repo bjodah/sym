@@ -96,7 +96,6 @@ class _SymEngine(_Base):
         # this will allow backend use with older symengine versions,
         # failing gracefully only if cse is invoked
         self._cse = getattr(self.__sym_backend__, 'cse', None)
-        self._ccode = getattr(self.__sym_backend__.lib.symengine_wrapper, 'ccode', None)
 
     def Matrix(self, *args, **kwargs):
         return self.DenseMatrix(*args, **kwargs)
@@ -107,11 +106,6 @@ class _SymEngine(_Base):
     def Dummy(self):
         self._dummy_counter[0] += 1
         return self.Symbol('Dummy_'+str(self._dummy_counter[0] - 1))
-
-    def ccode(self, *args, **kwargs):
-        # need to wrap, as ccode does not exist within root
-        # symengine namespace
-        return self.__sym_backend__.lib.symengine_wrapper.ccode(*args, **kwargs)
 
     def numbered_symbols(self, prefix='x', cls=None, start=0, exclude=None, *args):
         exclude = set(exclude or [])
