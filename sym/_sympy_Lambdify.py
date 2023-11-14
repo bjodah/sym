@@ -192,13 +192,12 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         for k, v in TRANSLATIONS.items():
             setattr(MyPrinter, '_print_%s' % k, mk_func(v))
 
-        p = MyPrinter()
+        ptr = MyPrinter({'fully_qualified_modules': False, 'inline': True})
 
-        def lambdarepr(_x):
-            return p.doprint(_x)
     else:
-        lambdarepr = __import__(backend + '.printing.lambdarepr',
-                                fromlist=['lambdarepr']).lambdarepr
+        LambdaPrinter = __import__(backend + '.printing.lambdarepr',
+                                fromlist=['LambdaPrinter']).LambdaPrinter
+        ptr = LambdaPrinter({'fully_qualified_modules': False, 'inline': True})
         if module == 'mpmath':
             TRANSLATIONS = {
                 "Abs": "fabs",
@@ -233,6 +232,9 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         else:
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
+    def lambdarepr(_x):
+        return ptr.doprint(_x)
+
     ordering = '..., %d'  # if order == 'C' else '%d, ...'
     mod = __import__(backend)
     indices = [mod.Symbol(ordering % i) for i in range(len(args))]
@@ -261,9 +263,25 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     namespace['numpy'] = np
     namespace['math'] = math
     # namespace['_transpose'] = _transpose
-    exec("""def _SYM_generated(x):
+    _src = """def _SYM_generated(x):
     {}
-""".format("\n    ".join(body)), namespace)
+""".format("\n    ".join(body))
+
+    for mod, keys in (getattr(ptr, 'module_imports', None) or {}).items():
+        for k in keys:
+            if k not in namespace:
+                ln = "from %s import %s" % (mod, k)
+                try:
+                    exec(ln, {}, namespace)
+                except ImportError:
+                    ln = "%s = %s.%s" % (k, mod, k)
+                    exec(ln, {}, namespace)
+            _src = ln + '\n' + _src
+    print(_src)####DO-NOT-MERGE!!!q
+    print(f"{ptr.module_imports=}")####DO-NOT-MERGE!!!
+    if 'logsumexp' in namespace:
+        print(f"{namespace['logsumexp']=}")####DO-NOT-MERGE!!!
+    exec(_src, namespace)
     func = namespace['_SYM_generated']
     if use_numba:
         from numba import jit
