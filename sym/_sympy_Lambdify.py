@@ -276,11 +276,8 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
                 except ImportError:
                     ln = "%s = %s.%s" % (k, mod, k)
                     exec(ln, {}, namespace)
-            _src = ln + '\n' + _src
-    print(_src)####DO-NOT-MERGE!!!q
-    print(f"{ptr.module_imports=}")####DO-NOT-MERGE!!!
-    if 'logsumexp' in namespace:
-        print(f"{namespace['logsumexp']=}")####DO-NOT-MERGE!!!
+                _src = ln + '\n' + _src
+
     exec(_src, namespace)
     func = namespace['_SYM_generated']
     if use_numba:
