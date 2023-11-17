@@ -265,9 +265,8 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
 
     namespace['numpy'] = np
     namespace['math'] = math
-    # namespace['_transpose'] = _transpose
-    _src = "from numpy import exp\n"
-    _src += """def _SYM_generated(x):
+
+    _src = """def _SYM_generated(x):
     {}
 """.format("\n    ".join(body))
 
