@@ -5,6 +5,7 @@ import math
 import os
 from functools import reduce
 from operator import mul
+import linecache
 
 import numpy as np  # Lambdify requires numpy
 import warnings
@@ -157,7 +158,9 @@ def mk_func(v):
     return prnt
 
 
-def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy', cse=False):
+_build_python_sym_counter = 0
+
+def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy', cse=False, globals_=None):
     if module == 'numpy':
         TRANSLATIONS = {
             "acos": "arccos",
@@ -263,22 +266,32 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     namespace['numpy'] = np
     namespace['math'] = math
     # namespace['_transpose'] = _transpose
-    _src = """def _SYM_generated(x):
+    _src = "from numpy import exp\n"
+    _src += """def _SYM_generated(x):
     {}
 """.format("\n    ".join(body))
 
-    for mod, keys in (getattr(ptr, 'module_imports', None) or {}).items():
+    globals_ = globals_ or {}
+
+    _module_imports = getattr(ptr, 'module_imports', None) or {}
+
+    for mod, keys in _module_imports.items():
         for k in keys:
             if k not in namespace:
                 ln = "from %s import %s" % (mod, k)
                 try:
-                    exec(ln, {}, namespace)
+                    exec(ln, globals_, namespace)
                 except ImportError:
                     ln = "%s = %s.%s" % (k, mod, k)
-                    exec(ln, {}, namespace)
+                    exec(ln, globals_, namespace)
                 _src = ln + '\n' + _src
 
-    exec(_src, namespace)
+    global _build_python_sym_counter
+    filename = "<_sym_Lambdify._callback_factory-generated-%d>" % _build_python_sym_counter
+    _build_python_sym_counter += 1
+    _cpl = compile(_src, filename, 'exec')
+    exec(_cpl, namespace)
+    linecache.cache[filename] = (len(_src), None, _src.splitlines(True), filename)  # type: ignore
     func = namespace['_SYM_generated']
     if use_numba:
         from numba import jit
