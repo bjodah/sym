@@ -1,12 +1,12 @@
 pipeline:
   build:
-    image: bjodah/bjodahimg20dot:2.1.1.2
+    image: bjodah/kinetgine_ci:21.7.a.0
     environment:
-      - CC=gcc-10
-      - CXX=g++-10
-      - SymEngine_DIR=/opt/symengine-46090cf-rel
+      - CC=gcc-11
+      - CXX=g++-11
+#      - SymEngine_DIR=/opt/symengine-24c9d19-rel
     commands:
-      - python3 -m pip install https://github.com/symengine/symengine.py/archive/62a0d89b5b9ad00814c5cd2f72e697aa1c21dccd.tar.gz
+#      - python3 -m pip install https://github.com/symengine/symengine.py/archive/62a0d89b5b9ad00814c5cd2f72e697aa1c21dccd.tar.gz
       - SYM_STRICT_TESTING=1 ./scripts/ci.sh sym
       - ./scripts/prepare_deploy.sh
 

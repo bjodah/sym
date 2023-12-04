@@ -46,6 +46,18 @@ class _Base(object):
             np.asarray(colvals, dtype=int)
         )
 
+    def expm1(self, expr):
+        return self.exp(expr) - 1
+
+    def log1p(self, expr):
+        return self.log(1+expr)
+
+    def exp2(self, expr):
+        return self.exp(expr*self.log(2))
+
+    def log2(self, expr):
+        return self.log(expr)/self.log(2)
+
 
 class _SymPy(_Base):
 
@@ -56,6 +68,26 @@ class _SymPy(_Base):
 
     def real_symarray(self, prefix, shape):
         return self.symarray(prefix, shape, real=True)
+
+    def expm1(self, expr):
+        from sympy.codegen.cfunctions import expm1
+        return expm1(expr)
+
+    def log1p(self, expr):
+        from sympy.codegen.cfunctions import log1p
+        return log1p(expr)
+
+    def exp2(self, expr):
+        from sympy.codegen.cfunctions import exp2
+        return exp2(expr)
+
+    def log2(self, expr):
+        from sympy.codegen.cfunctions import log2
+        return log2(expr)
+
+    def arcsinh(self, expr):
+        from sympy import asinh
+        return asinh(expr)
 
     DenseMatrix = _DenseMatrix
 
