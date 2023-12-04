@@ -21,6 +21,9 @@ def test_callback_factory():
     ref = 17 + np.arctan(1)
     assert np.allclose(cb(inp), ref)
 
+    with pytest.raises(ValueError):
+        _callback_factory(args, [abs(x).diff(x)], 'numpy', np.float64, 'C')
+
 
 def test_callback_factory__broadcast():
     args = x, y = symbols('x y')

@@ -195,7 +195,10 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         for k, v in TRANSLATIONS.items():
             setattr(MyPrinter, '_print_%s' % k, mk_func(v))
 
-        ptr = MyPrinter({'fully_qualified_modules': False, 'inline': True})
+        settings = {'fully_qualified_modules': False, 'inline': True}
+        if 'strict' in MyPrinter._default_settings:
+            settings['strict'] = True
+        ptr = MyPrinter(settings)
 
     else:
         LambdaPrinter = __import__(backend + '.printing.lambdarepr',
@@ -273,7 +276,6 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     globals_ = globals_ or {}
 
     _module_imports = getattr(ptr, 'module_imports', None) or {}
-
     for mod, keys in _module_imports.items():
         for k in keys:
             if k not in namespace:
