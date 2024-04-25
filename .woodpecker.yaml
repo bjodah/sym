@@ -3,7 +3,7 @@ when:
 
 steps:
   - name: build
-    image: bjodah/bjodagimg20dot:21.8.a
+    image: bjodah/bjodahimg20dot:21.8.a
     environment:
       - CC=gcc-11
       - CXX=g++-11
