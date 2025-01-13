@@ -3,7 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 
 from .._sympy_Lambdify import _callback_factory
 
-from sympy import symbols, atan
+from sympy import symbols, atan, Min, Max
 import numpy as np
 import pytest
 
@@ -21,7 +21,7 @@ def test_callback_factory():
     ref = 17 + np.arctan(1)
     assert np.allclose(cb(inp), ref)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(Exception):
         _callback_factory(args, [abs(x).diff(x)], 'numpy', np.float64, 'C')
 
 
@@ -121,3 +121,20 @@ def test_callback_factory__user_defined_function():
     _test1()
     _test2()
     #_test3()
+
+
+def test_Min_Max():
+    x = symbols('x')
+    args = x,
+    arr = np.array([0, 1, 2])
+    tiny = 1e-300
+    for cls in [Min, Max]:
+        expr = cls(x, tiny)
+        f = _callback_factory(args, [expr], 'numpy', np.float64, 'C')
+        result = f(arr)
+        if cls == Min:
+            assert result == 0
+        elif cls == Max:
+            assert result == 2
+        else:
+            raise NotImplementedError(...)

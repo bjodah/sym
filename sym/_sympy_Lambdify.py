@@ -189,16 +189,28 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         NumPyPrinter = __import__(backend + '.printing.lambdarepr',
                                   fromlist=['NumPyPrinter']).NumPyPrinter
 
-        class MyPrinter(NumPyPrinter):
-            pass
+        class SymNumpyPrinter(NumPyPrinter):
+            def _helper_Min_Max(self, op, arg):
+                _reduce = self._module_format('functools.reduce')
+                s_args = [self._print(arg) for arg in arg.args]
+                return f"{_reduce}({op}, [{', '.join(s_args)}])"
+
+            def _print_Min(self, arg):
+                op = self._module_format(self._module + '.minimum')
+                return self._helper_Min_Max(op, arg)
+
+            def _print_Max(self, arg):
+                op = self._module_format(self._module + '.maximum')
+                return self._helper_Min_Max(op, arg)
+
 
         for k, v in TRANSLATIONS.items():
-            setattr(MyPrinter, '_print_%s' % k, mk_func(v))
+            setattr(SymNumpyPrinter, '_print_%s' % k, mk_func(v))
 
         settings = {'fully_qualified_modules': False, 'inline': True}
-        if 'strict' in MyPrinter._default_settings:
+        if 'strict' in SymNumpyPrinter._default_settings:
             settings['strict'] = True
-        ptr = MyPrinter(settings)
+        ptr = SymNumpyPrinter(settings)
 
     else:
         LambdaPrinter = __import__(backend + '.printing.lambdarepr',

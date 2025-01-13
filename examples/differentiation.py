@@ -5,7 +5,7 @@ from sym import Backend
 
 
 def main():
-    for key in 'sympy pysym symengine'.split():
+    for key in 'sympy symengine'.split():  # pysym
         print(key)
         print('    Differentiation:')
         be = Backend(key)
