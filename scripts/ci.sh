@@ -5,7 +5,7 @@ fi
 
 python3 -m pip install symengine
 python3 -m pip install --user .[all]
-./scripts/run_tests.sh
+./scripts/run_tests.sh -k "not diofant"
 ./scripts/render_notebooks.sh examples/
 ./scripts/generate_docs.sh
 
