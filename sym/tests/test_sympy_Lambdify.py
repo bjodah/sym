@@ -133,8 +133,8 @@ def test_Min_Max():
         f = _callback_factory(args, [expr], 'numpy', np.float64, 'C')
         result = f(arr)
         if cls == Min:
-            assert result == 0
+            assert result == [0]
         elif cls == Max:
-            assert result == 2
+            assert result == [2]
         else:
             raise NotImplementedError(...)
