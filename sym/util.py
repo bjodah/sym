@@ -3,6 +3,19 @@ from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 
+import sympy as sy
+
+class Maximum(sy.core.function.Application):
+    pass
+
+class Minimum(sy.core.function.Application):
+    pass
+
+class AMin(sy.core.function.Application):
+    nargs = 1
+
+class AMax(sy.core.function.Application):
+    nargs = 1
 
 def banded_jacobian(y, x, ml, mu):
     """ Calculates a banded version of the jacobian

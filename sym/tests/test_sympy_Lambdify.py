@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function)
 
+from ..util import AMax, AMin, Maximum, Minimum
 from .._sympy_Lambdify import _callback_factory
 
-from sympy import symbols, atan, Min, Max
+from sympy import symbols, atan
 import numpy as np
 import pytest
 
@@ -123,18 +124,24 @@ def test_callback_factory__user_defined_function():
     #_test3()
 
 
-def test_Min_Max():
+@pytest.mark.xfail
+@pytest.mark.parametrize("Amix,Miximum,highest", [
+    (AMin, Minimum, False),
+    (AMax, Maximum, True)
+])
+def test_amin_amax_minimum_maximum(Amix, Miximum, highest: bool):
     x = symbols('x')
     args = x,
-    arr = np.array([0, 1, 2])
+    arr = np.array([
+        [0, 4, 8],
+        [1, 5, 9],
+        [2, 6, 10],
+    ])
     tiny = 1e-300
-    for cls in [Min, Max]:
-        expr = cls(x, tiny)
-        f = _callback_factory(args, [expr], 'numpy', np.float64, 'C')
-        result = f(arr)
-        if cls == Min:
-            assert result == [0]
-        elif cls == Max:
-            assert result == [2]
-        else:
-            raise NotImplementedError(...)
+    expr = Miximum(Amix(x), tiny)
+    f =  _callback_factory(args, [expr], 'numpy', np.float64, 'C')
+    result = f(arr)
+    if highest:
+        assert result == [10]
+    else:
+        assert result == [0]

@@ -11,11 +11,12 @@ trap 'rm -rf -- "$REPO_TMP_DIR"' EXIT
 cp -ra . "$REPO_TMP_DIR/."
 cd "$REPO_TMP_DIR"
 
-python3 -m pip install symengine
-python3 -m pip install --no-build-isolation \
+PYTHON=${PYTHON:-python}
+$PYTHON -m pip install \
         "git+https://github.com/bjodah/symcxx#egg=symcxx" \
         "git+https://github.com/bjodah/pysym#egg=pysym"  # unofficial backends
-python3 -m pip install ${INSTALL_FLAGS_FOR_PIP:-} .[all]
+$PYTHON -m pip install symengine
+$PYTHON -m pip install ${INSTALL_FLAGS_FOR_PIP:-} .[all]
 ./scripts/run_tests.sh -k "not diofant"
 ./scripts/render_notebooks.sh examples/
 ./scripts/generate_docs.sh
