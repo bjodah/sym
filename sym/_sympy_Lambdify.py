@@ -191,9 +191,11 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
 
         class SymNumpyPrinter(NumPyPrinter):
             def _print_Max(self, *args):
-                raise NotImplementedError("this does not give what you expect currently, see _print_AMax and tests thereof")
+                warnings.warn("Try to move from Max to AMax or Maximum")
+                return super()._print_Max(*args)
             def _print_Min(self, *args):
-                raise NotImplementedError("this does not give what you expect currently, see _print_AMin and tests thereof")
+                warnings.warn("Try to move from Min to AMin or Minimum")
+                return super()._print_Min(*args)
             def _print_AMin(self, arg):
                 inner, = arg.args
                 op = self._module_format(self._module + '.amin')
