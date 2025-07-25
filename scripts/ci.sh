@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-PKG_NAME=${PKG_NAME:-CI_REPO_NAME##*/}
+PKG_NAME=${PKG_NAME:-${CI_REPO_NAME##*/}}
 
 if [[ "$CI_COMMIT_BRANCH" =~ ^v[0-9]+.[0-9]?* ]]; then
     eval export ${PKG_NAME^^}_RELEASE_VERSION=\$CI_COMMIT_BRANCH
