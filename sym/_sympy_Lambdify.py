@@ -302,7 +302,7 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     namespace['math'] = math
 
     signature = "def _SYM_generated(x):"
-    body_s = "\n    ".join(["x = numpy.asanyarray(x)"]+
+    body_s = "\n    ".join(#["x = numpy.atleast_2d(x)"]+
         body)
     _src = """{signature}
     {body_s}
@@ -332,7 +332,7 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     if use_numba:
         from numba import jit
         func = jit(func)
-    if module == 'numpy':
+    if module == 'numpy' or use_numba:
         def wrapper(x):
             arg = np.atleast_1d(np.asanyarray(x, dtype=dtype))
             res = func(arg)
