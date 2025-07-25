@@ -302,7 +302,7 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     namespace['math'] = math
 
     signature = "def _SYM_generated(x):"
-    body_s = "\n    ".join(#["x = numpy.atleast_2d(x)"]+
+    body_s = "\n    ".join(["x = numpy.asanyarray(x)"]+
         body)
     _src = """{signature}
     {body_s}
