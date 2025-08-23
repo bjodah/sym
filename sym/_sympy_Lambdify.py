@@ -5,6 +5,7 @@ import math
 import os
 from functools import reduce
 from operator import mul
+from typing import Iterable
 import linecache
 
 import numpy as np  # Lambdify requires numpy
@@ -273,7 +274,10 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
     def lambdarepr(_x):
-        return '(%s,)' % ', '.join(map(ptr.doprint, _x))
+        if isinstance(_x, Iterable):
+            return '(%s,)' % ', '.join(map(ptr.doprint, _x))
+        else:
+            return ptr.doprint(_x)
 
     ordering = '..., %d'  # if order == 'C' else '%d, ...'
     mod = __import__(backend)
