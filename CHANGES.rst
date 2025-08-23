@@ -1,3 +1,9 @@
+v0.3.6
+======
+- Better support for numba.njit
+- Handle SymPy's Min, Max
+- log1p, expm1, etc.
+
 v0.3.5
 ======
 - Lambdify accepts kwarg 'cse'
