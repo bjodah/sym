@@ -234,9 +234,6 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
             settings['strict'] = True
         ptr = SymNumpyPrinter(settings)
 
-        def lambdarepr(_x):
-            return "numpy.array((%s))" % (', '.join(map(ptr.doprint, _x)))
-
     else:
         LambdaPrinter = __import__(backend + '.printing.lambdarepr',
                                 fromlist=['LambdaPrinter']).LambdaPrinter
@@ -275,8 +272,8 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         else:
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
-        def lambdarepr(_x):
-            return ptr.doprint(_x)
+    def lambdarepr(_x):
+        return '(%s,)' % ', '.join(map(ptr.doprint, _x))
 
     ordering = '..., %d'  # if order == 'C' else '%d, ...'
     mod = __import__(backend)
