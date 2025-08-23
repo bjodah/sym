@@ -199,32 +199,45 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
             def _print_Min(self, *args):
                 warnings.warn("Try to move from Min to AMin or Minimum")
                 return super()._print_Min(*args)
-            def _print_AMin(self, arg):
-                inner, = arg.args
-                op = self._module_format(self._module + '.amin')
-                return f"{op}({self._print(inner)})"
 
-            def _print_AMax(self, arg):
-                inner, = arg.args
-                op = self._module_format(self._module + '.amax')
-                return f"{op}({self._print(inner)})"
+            # def _print_AMin(self, arg):
+            #     inner, = arg.args
+            #     op = self._module_format(self._module + '.amin')
+            #     return f"{op}({self._print(inner)})"
 
-            def _helper_Minimum_Maximum(self, op, arg):
-                if len(arg.args) == 0:
+            # def _print_AMax(self, arg):
+            #     inner, = arg.args
+            #     op = self._module_format(self._module + '.amax')
+            #     return f"{op}({self._print(inner)})"
+
+            def _helper_Minimum_Maximum(self, op, *args):
+                if len(args) == 0:
                     raise NotImplementedError(f"Need at least one argument for {op}")
-                elif len(arg.args) == 1:
-                    return self._print(arg.args[0])
+                elif len(args) == 1:
+                    return self._print(args[0])
                 _reduce = self._module_format('functools.reduce')
-                s_args = [self._print(arg) for arg in arg.args]
+                s_args = [self._print(arg) for arg in args]
                 return f"{_reduce}({op}, [{', '.join(s_args)}])"
 
-            def _print_Minimum(self, arg):
-                op = self._module_format(self._module + '.minimum')
-                return self._helper_Minimum_Maximum(op, arg)
+            # def _print_Minimum(self, arg):
+            #     op = self._module_format(self._module + '.minimum')
+            #     return self._helper_Minimum_Maximum(op, arg)
 
-            def _print_Maximum(self, arg):
+            # def _print_Maximum(self, arg):
+            #     op = self._module_format(self._module + '.maximum')
+            #     return self._helper_Minimum_Maximum(op, arg)
+
+            def _print_Min(self, arg):
+                # warnings.warn("Try to move from Min to AMin or Minimum")
+                # return super()._print_Min(*args)
+                op = self._module_format(self._module + '.minimum')
+                return self._helper_Minimum_Maximum(op, *arg.args)
+
+            def _print_Max(self, arg):
+                # warnings.warn("Try to move from Max to AMax or Maximum")
+                # return super()._print_Max(*args)
                 op = self._module_format(self._module + '.maximum')
-                return self._helper_Minimum_Maximum(op, arg)
+                return self._helper_Minimum_Maximum(op, *arg.args)
 
 
         for k, v in TRANSLATIONS.items():

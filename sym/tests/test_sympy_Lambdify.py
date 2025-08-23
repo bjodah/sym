@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function)
 
-from ..util import AMax, AMin, Maximum, Minimum
 from .._sympy_Lambdify import _callback_factory
 
-from sympy import symbols, atan
+from sympy import symbols, atan, Min, Max
 import numpy as np
 import pytest
 
@@ -124,12 +123,12 @@ def test_callback_factory__user_defined_function():
     #_test3()
 
 
-@pytest.mark.xfail
-@pytest.mark.parametrize("Amix,Miximum,highest", [
-    (AMin, Minimum, False),
-    (AMax, Maximum, True)
+#@pytest.mark.xfail
+@pytest.mark.parametrize("Mix,highest", [
+    (Min, False),
+    (Max, True)
 ])
-def test_amin_amax_minimum_maximum(Amix, Miximum, highest: bool):
+def test_Min_Max(Mix, highest: bool):
     x = symbols('x')
     args = x,
     arr = np.array([
@@ -138,10 +137,10 @@ def test_amin_amax_minimum_maximum(Amix, Miximum, highest: bool):
         [2, 6, 10],
     ])
     tiny = 1e-300
-    expr = Miximum(Amix(x), tiny)
+    expr = Mix(x, tiny)
     f =  _callback_factory(args, [expr], 'numpy', np.float64, 'C')
-    result = f(arr)
+    [result] = f(arr.reshape((3,3,1)))  # <--- ugh, that reshape needed....
     if highest:
-        assert result == [10]
+        assert np.all(result == np.maximum(arr, tiny))
     else:
-        assert result == [0]
+        assert np.all(result == np.minimum(arr, tiny))

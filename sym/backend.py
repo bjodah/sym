@@ -19,7 +19,7 @@ def _DenseMatrix(be, *args, **kwargs):
 class _Base(object):
 
     def __getattr__(self, key):
-        return getattr(self.__sym_backend__, key)
+        return getattr(object.__getattribute__(self, '__sym_backend__'), key)
 
     def banded_jacobian(self, exprs, dep, ml, mu):
         """ Wraps Matrix around result of .util.banded_jacobian """
