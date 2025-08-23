@@ -3,6 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import math
 import os
+import functools
 from functools import reduce
 from operator import mul
 from typing import Iterable
@@ -206,6 +207,7 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
                 elif len(args) == 1:
                     return self._print(args[0])
                 _reduce = self._module_format('functools.reduce')
+                assert functools  # <--- make sure we have this in global namespace for exec
                 s_args = [self._print(arg) for arg in args]
                 return f"{_reduce}({op}, [{', '.join(s_args)}])"
 
