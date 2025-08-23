@@ -400,7 +400,7 @@ def test_Lambdify_Ndimensional_order_C(key):
 
     inp_extra_shape = (3, 5, 4)
     inp_shape = inp_extra_shape + (nargs,)
-    inp4 = np.arange(reduce(mul, inp_shape)*1.0).reshape(inp_shape, order='C')
+    inp4 = np.arange(reduce(mul, inp_shape)*1.0, dtype=np.float64).reshape(inp_shape, order='C')
     out4a, out4b = lmb4(inp4)
     assert out4a.ndim == 7
     assert out4a.shape == inp_extra_shape + nd_exprs_a.shape

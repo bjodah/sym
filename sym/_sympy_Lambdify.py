@@ -332,6 +332,7 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     if use_numba:
         from numba import jit
         func = jit(func)
+
     if module == 'numpy' or use_numba:
         def wrapper(x):
             arg = np.atleast_1d(np.asanyarray(x, dtype=dtype))
@@ -339,5 +340,6 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
             return res
     else:
         wrapper = func
+
     wrapper.__doc__ = signature + '\n    ' + body_s + '\n\n'
     return wrapper
