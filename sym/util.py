@@ -3,6 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 
+import sympy as sy
 
 def banded_jacobian(y, x, ml, mu):
     """ Calculates a banded version of the jacobian
@@ -156,7 +157,7 @@ def linear_rref(A, b, backend):
     """
     try:
         b = b.as_mutable()
-    except:
+    except Exception:
         b = backend.MutableMatrix(b)
 
     Aug = A.col_insert(A.cols, backend.eye(A.rows))

@@ -5,6 +5,8 @@ import math
 import os
 from functools import reduce
 from operator import mul
+from typing import Iterable
+import linecache
 
 import numpy as np  # Lambdify requires numpy
 import warnings
@@ -157,7 +159,9 @@ def mk_func(v):
     return prnt
 
 
-def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy', cse=False):
+_build_python_sym_counter = 0
+
+def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, backend='sympy', cse=False, globals_=None):
     if module == 'numpy':
         TRANSLATIONS = {
             "acos": "arccos",
@@ -186,19 +190,46 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         NumPyPrinter = __import__(backend + '.printing.lambdarepr',
                                   fromlist=['NumPyPrinter']).NumPyPrinter
 
-        class MyPrinter(NumPyPrinter):
-            pass
+        class SymNumpyPrinter(NumPyPrinter):
+            def _print_Integer(self, arg):
+                return "%d.0" % arg
+            def _print_Max(self, *args):
+                warnings.warn("Try to move from Max to AMax or Maximum")
+                return super()._print_Max(*args)
+            def _print_Min(self, *args):
+                warnings.warn("Try to move from Min to AMin or Minimum")
+                return super()._print_Min(*args)
+
+            def _helper_Minimum_Maximum(self, op, *args):
+                if len(args) == 0:
+                    raise NotImplementedError(f"Need at least one argument for {op}")
+                elif len(args) == 1:
+                    return self._print(args[0])
+                _reduce = self._module_format('functools.reduce')
+                s_args = [self._print(arg) for arg in args]
+                return f"{_reduce}({op}, [{', '.join(s_args)}])"
+
+            def _print_Min(self, arg):
+                op = self._module_format(self._module + '.minimum')
+                return self._helper_Minimum_Maximum(op, *arg.args)
+
+            def _print_Max(self, arg):
+                op = self._module_format(self._module + '.maximum')
+                return self._helper_Minimum_Maximum(op, *arg.args)
+
 
         for k, v in TRANSLATIONS.items():
-            setattr(MyPrinter, '_print_%s' % k, mk_func(v))
+            setattr(SymNumpyPrinter, '_print_%s' % k, mk_func(v))
 
-        p = MyPrinter()
+        settings = {'fully_qualified_modules': False, 'inline': True}
+        if 'strict' in SymNumpyPrinter._default_settings:
+            settings['strict'] = True
+        ptr = SymNumpyPrinter(settings)
 
-        def lambdarepr(_x):
-            return p.doprint(_x)
     else:
-        lambdarepr = __import__(backend + '.printing.lambdarepr',
-                                fromlist=['lambdarepr']).lambdarepr
+        LambdaPrinter = __import__(backend + '.printing.lambdarepr',
+                                fromlist=['LambdaPrinter']).LambdaPrinter
+        ptr = LambdaPrinter({'fully_qualified_modules': False, 'inline': True})
         if module == 'mpmath':
             TRANSLATIONS = {
                 "Abs": "fabs",
@@ -233,6 +264,12 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         else:
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
+    def lambdarepr(_x):
+        if isinstance(_x, Iterable):
+            return '(%s,)' % ', '.join(map(ptr.doprint, _x))
+        else:
+            return ptr.doprint(_x)
+
     ordering = '..., %d'  # if order == 'C' else '%d, ...'
     mod = __import__(backend)
     indices = [mod.Symbol(ordering % i) for i in range(len(args))]
@@ -260,20 +297,46 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
 
     namespace['numpy'] = np
     namespace['math'] = math
-    # namespace['_transpose'] = _transpose
-    exec("""def _SYM_generated(x):
-    {}
-""".format("\n    ".join(body)), namespace)
+
+    signature = "def _SYM_generated(x):"
+    body_s = "\n    ".join(#["x = numpy.atleast_2d(x)"]+
+        body)
+    _src = """{signature}
+    {body_s}
+""".format(signature=signature, body_s=body_s)
+
+    globals_ = globals_ or {}
+
+    _module_imports = getattr(ptr, 'module_imports', None) or {}
+    for mod, keys in _module_imports.items():
+        for k in keys:
+            if k not in namespace:
+                ln = "from %s import %s" % (mod, k)
+                try:
+                    exec(ln, globals_, namespace)
+                except ImportError:
+                    ln = "%s = %s.%s" % (k, mod, k)
+                    exec(ln, globals_, namespace)
+                _src = ln + '\n' + _src
+
+    global _build_python_sym_counter
+    filename = "<_sym_Lambdify._callback_factory-generated-%d>" % _build_python_sym_counter
+    _build_python_sym_counter += 1
+    _cpl = compile(_src, filename, 'exec')
+    exec(_cpl, namespace)
+    linecache.cache[filename] = (len(_src), None, _src.splitlines(True), filename)  # type: ignore
     func = namespace['_SYM_generated']
     if use_numba:
         from numba import jit
         func = jit(func)
-    if module == 'numpy':
+
+    if module == 'numpy' or use_numba:
         def wrapper(x):
             arg = np.atleast_1d(np.asanyarray(x, dtype=dtype))
             res = func(arg)
             return res
     else:
         wrapper = func
-    wrapper.__doc__ = "\n    ".join(body) + '\n\n'
+
+    wrapper.__doc__ = signature + '\n    ' + body_s + '\n\n'
     return wrapper

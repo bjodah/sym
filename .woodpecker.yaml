@@ -1,0 +1,39 @@
+variables:
+  - &ci_image 'cont-reg.bjodah.se:443/bjodah/triceratops-4:25'
+
+when:
+  - event: [push]
+
+steps:
+  - name: use-cse
+    image: *ci_image
+    environment:
+      - SYM_USE_CSE=1
+      - SYM_USE_NUMBA=0
+    commands:
+      - bash -lc "source /opt-3/cpython-v3.*-apt-deb/bin/activate; SYM_STRICT_TESTING=1 ./scripts/ci.sh --cov sym --cov-report html"
+      - ./scripts/prepare_deploy.sh
+
+  - name: no-cse
+    image: *ci_image
+    environment:
+      - SYM_USE_CSE=0
+      - SYM_USE_NUMBA=0
+    commands:
+      - bash -lc "source /opt-3/cpython-v3.*-apt-deb/bin/activate; SYM_STRICT_TESTING=1 ./scripts/ci.sh"
+
+  - name: use-numba-nocse
+    image: *ci_image
+    environment:
+      - SYM_USE_CSE=0
+      - SYM_USE_NUMBA=1
+    commands:
+      - bash -lc "source /opt-3/cpython-v3.*-apt-deb/bin/activate; SYM_STRICT_TESTING=1 ./scripts/ci.sh"
+
+  - name: use-numba-cse
+    image: *ci_image
+    environment:
+      - SYM_USE_CSE=1
+      - SYM_USE_NUMBA=1
+    commands:
+      - bash -lc "source /opt-3/cpython-v3.*-apt-deb/bin/activate; SYM_STRICT_TESTING=1 ./scripts/ci.sh"
