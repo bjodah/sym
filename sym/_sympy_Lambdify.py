@@ -190,6 +190,8 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
                                   fromlist=['NumPyPrinter']).NumPyPrinter
 
         class SymNumpyPrinter(NumPyPrinter):
+            def _print_Integer(self, arg):
+                return "%d.0" % arg
             def _print_Max(self, *args):
                 warnings.warn("Try to move from Max to AMax or Maximum")
                 return super()._print_Max(*args)
@@ -232,6 +234,9 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
             settings['strict'] = True
         ptr = SymNumpyPrinter(settings)
 
+        def lambdarepr(_x):
+            return "numpy.array((%s))" % (', '.join(map(ptr.doprint, _x)))
+
     else:
         LambdaPrinter = __import__(backend + '.printing.lambdarepr',
                                 fromlist=['LambdaPrinter']).LambdaPrinter
@@ -270,8 +275,8 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
         else:
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
-    def lambdarepr(_x):
-        return ptr.doprint(_x)
+        def lambdarepr(_x):
+            return ptr.doprint(_x)
 
     ordering = '..., %d'  # if order == 'C' else '%d, ...'
     mod = __import__(backend)
