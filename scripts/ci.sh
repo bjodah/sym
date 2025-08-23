@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-PKG_NAME=${1:-${CI_REPO_NAME##*/}}
+PKG_NAME=${PKG_NAME:-${CI_REPO_NAME##*/}}
 
 if [[ "$CI_COMMIT_BRANCH" =~ ^v[0-9]+.[0-9]?* ]]; then
     eval export ${PKG_NAME^^}_RELEASE_VERSION=\$CI_COMMIT_BRANCH
@@ -17,9 +17,7 @@ $PYTHON -m pip install \
         "git+https://github.com/bjodah/pysym#egg=pysym"  # unofficial backends
 $PYTHON -m pip install symengine
 $PYTHON -m pip install ${INSTALL_FLAGS_FOR_PIP:-} .[all]
-cd ./scripts/
-./run_tests.sh -k "not diofant" --pyargs $PKG_NAME
-cd -
+./scripts/run_tests.sh -k "not diofant" --pyargs $PKG_NAME "$@"
 ./scripts/render_notebooks.sh examples/
 ./scripts/generate_docs.sh
 
