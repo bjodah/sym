@@ -1,3 +1,7 @@
+v0.3.7
+======
+- ensure functools in global namespace in Lambdify
+
 v0.3.6
 ======
 - Better support for numba.njit
