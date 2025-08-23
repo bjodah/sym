@@ -5,18 +5,6 @@ import numpy as np
 
 import sympy as sy
 
-# class Maximum(sy.core.function.Application):
-#     pass
-
-# class Minimum(sy.core.function.Application):
-#     pass
-
-# class AMin(sy.core.function.Application):
-#     nargs = 1
-
-# class AMax(sy.core.function.Application):
-#     nargs = 1
-
 def banded_jacobian(y, x, ml, mu):
     """ Calculates a banded version of the jacobian
 
@@ -169,7 +157,7 @@ def linear_rref(A, b, backend):
     """
     try:
         b = b.as_mutable()
-    except:
+    except Exception:
         b = backend.MutableMatrix(b)
 
     Aug = A.col_insert(A.cols, backend.eye(A.rows))
