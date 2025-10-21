@@ -5,6 +5,7 @@ import math
 import os
 from functools import reduce
 from operator import mul
+from typing import Iterable
 import linecache
 
 import numpy as np  # Lambdify requires numpy
@@ -190,15 +191,14 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
                                   fromlist=['NumPyPrinter']).NumPyPrinter
 
         class SymNumpyPrinter(NumPyPrinter):
-            # def _print_AMin(self, arg):
-            #     inner, = arg.args
-            #     op = self._module_format(self._module + '.amin')
-            #     return f"{op}({self._print(inner)})"
-
-            # def _print_AMax(self, arg):
-            #     inner, = arg.args
-            #     op = self._module_format(self._module + '.amax')
-            #     return f"{op}({self._print(inner)})"
+            def _print_Integer(self, arg):
+                return "%d.0" % arg
+            def _print_Max(self, *args):
+                warnings.warn("Try to move from Max to AMax or Maximum")
+                return super()._print_Max(*args)
+            def _print_Min(self, *args):
+                warnings.warn("Try to move from Min to AMin or Minimum")
+                return super()._print_Min(*args)
 
             def _helper_Minimum_Maximum(self, op, *args):
                 if len(args) == 0:
@@ -209,23 +209,11 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
                 s_args = [self._print(arg) for arg in args]
                 return f"{_reduce}({op}, [{', '.join(s_args)}])"
 
-            # def _print_Minimum(self, arg):
-            #     op = self._module_format(self._module + '.minimum')
-            #     return self._helper_Minimum_Maximum(op, arg)
-
-            # def _print_Maximum(self, arg):
-            #     op = self._module_format(self._module + '.maximum')
-            #     return self._helper_Minimum_Maximum(op, arg)
-
             def _print_Min(self, arg):
-                # warnings.warn("Try to move from Min to AMin or Minimum")
-                # return super()._print_Min(*args)
                 op = self._module_format(self._module + '.minimum')
                 return self._helper_Minimum_Maximum(op, *arg.args)
 
             def _print_Max(self, arg):
-                # warnings.warn("Try to move from Max to AMax or Maximum")
-                # return super()._print_Max(*args)
                 op = self._module_format(self._module + '.maximum')
                 return self._helper_Minimum_Maximum(op, *arg.args)
 
@@ -277,7 +265,10 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
             raise NotImplementedError("Lambdify does not yet support %s" % module)
 
     def lambdarepr(_x):
-        return ptr.doprint(_x)
+        if isinstance(_x, Iterable):
+            return '(%s,)' % ', '.join(map(ptr.doprint, _x))
+        else:
+            return ptr.doprint(_x)
 
     ordering = '..., %d'  # if order == 'C' else '%d, ...'
     mod = __import__(backend)
@@ -341,12 +332,14 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     if use_numba:
         from numba import jit
         func = jit(func)
-    if module == 'numpy':
+
+    if module == 'numpy' or use_numba:
         def wrapper(x):
             arg = np.atleast_1d(np.asanyarray(x, dtype=dtype))
             res = func(arg)
             return res
     else:
         wrapper = func
+
     wrapper.__doc__ = signature + '\n    ' + body_s + '\n\n'
     return wrapper
