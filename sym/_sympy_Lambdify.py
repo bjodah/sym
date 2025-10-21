@@ -323,9 +323,12 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
                 ln = "from %s import %s" % (mod, k)
                 try:
                     exec(ln, globals_, namespace)
-                except ImportError:
+                except ImportError as imp_err:
                     ln = "%s = %s.%s" % (k, mod, k)
-                    exec(ln, globals_, namespace)
+                    try:
+                        exec(ln, globals_, namespace)
+                    except NameError:
+                        raise imp_err
                 _src = ln + '\n' + _src
 
     global _build_python_sym_counter
