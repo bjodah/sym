@@ -288,6 +288,9 @@ def _callback_factory(args, flat_exprs, module, dtype, order, use_numba=False, b
     mod = __import__(module)
     namespace = mod.__dict__.copy()
 
+    if 'NAN' not in namespace and 'nan' in namespace:
+        namespace['NAN'] = 'nan'  # numpy 1.x --> 2.x back-comp
+
     # NumPyPrinter incomplete: https://github.com/sympy/sympy/issues/11023
     for k, v in TRANSLATIONS.items():
         namespace[k] = namespace[v]
